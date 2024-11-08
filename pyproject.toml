@@ -3,27 +3,66 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "QuantLite"
-version = "0.1.0"
-description = "A robust quant finance library"
-requires-python = ">=3.8"
-
-# The license field references the file we just created
+name = "quantlite"
+version = "0.2.0"
+description = "A fat-tail-native quantitative finance toolkit: EVT, risk metrics, and honest modelling for markets that bite."
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
-
 readme = "README.md"
 authors = [
-  { name = "Prasant Sudhakaran", email = "code@prasant.net" }
+    { name = "Prasant Sudhakaran", email = "code@prasant.net" }
 ]
-keywords = ["quant", "finance", "monte carlo", "exotic options"]
-
+keywords = [
+    "quant",
+    "finance",
+    "risk",
+    "extreme value theory",
+    "monte carlo",
+    "fat tails",
+    "VaR",
+    "CVaR",
+    "options",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Typing :: Typed",
+]
 dependencies = [
-  "numpy",
-  "pandas",
-  "scipy",
-  "matplotlib",
-  "mplfinance"
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "mplfinance",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pandas-stubs",
+]
+
+[project.urls]
+Homepage = "https://github.com/prasants/QuantLite"
+Repository = "https://github.com/prasants/QuantLite"
+Issues = "https://github.com/prasants/QuantLite/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

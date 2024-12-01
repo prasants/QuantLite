@@ -1,121 +1,121 @@
+"""Monte Carlo pricing for exotic options (barrier, Asian).
+
+All simulations are fully vectorised using NumPy broadcasting.
+"""
+
+from __future__ import annotations
+
 import math
+
 import numpy as np
-from scipy.stats import norm
+
+__all__ = [
+    "barrier_option_knock_out",
+    "asian_option_arithmetic",
+]
+
 
 def barrier_option_knock_out(
-    S0, 
-    K, 
-    H, 
-    T, 
-    r, 
-    sigma, 
-    option_type="call", 
-    barrier_type="down-and-out",
-    steps=1000,
-    sims=10000,
-    rng_seed=None
-):
+    S0: float,
+    K: float,
+    H: float,
+    T: float,
+    r: float,
+    sigma: float,
+    option_type: str = "call",
+    barrier_type: str = "down-and-out",
+    steps: int = 1000,
+    sims: int = 10000,
+    rng_seed: int | None = None,
+) -> float:
+    """Price a knock-out barrier option via vectorised Monte Carlo.
+
+    Args:
+        S0: Initial spot price.
+        K: Strike price.
+        H: Barrier level.
+        T: Time to maturity in years.
+        r: Risk-free rate.
+        sigma: Volatility.
+        option_type: ``"call"`` or ``"put"``.
+        barrier_type: ``"down-and-out"`` (more types in future).
+        steps: Time steps per path.
+        sims: Number of simulated paths.
+        rng_seed: Seed for reproducibility.
+
+    Returns:
+        Estimated option price.
     """
-    Monte Carlo pricing for a knock-out barrier option.
-    If the underlying price touches the barrier H, the option immediately becomes worthless (knocks out).
-
-    Parameters
-    ----------
-    S0 : float
-        Initial underlying price.
-    K : float
-        Strike.
-    H : float
-        Barrier level.
-    T : float
-        Time to maturity (in years).
-    r : float
-        Risk-free interest rate.
-    sigma : float
-        Volatility.
-    option_type : str
-        "call" or "put".
-    barrier_type : str
-        For this example, "down-and-out" only. (You could extend to up-and-out, etc.)
-    steps : int
-        Number of time steps in each simulation path.
-    sims : int
-        Number of simulated paths.
-    rng_seed : int, optional
-        Reproducibility.
-
-    Returns
-    -------
-    float
-        Estimated option value.
-    """
-    if rng_seed is not None:
-        np.random.seed(rng_seed)
-
+    rng = np.random.default_rng(rng_seed)
     dt = T / steps
     disc_factor = math.exp(-r * T)
-    payoffs = []
 
-    for _ in range(sims):
-        price = S0
-        knocked_out = False
-        for __ in range(steps):
-            dW = np.random.normal(0, math.sqrt(dt))
-            price *= math.exp((r - 0.5 * sigma**2)*dt + sigma*dW)
+    # Vectorised path generation: (sims, steps)
+    Z = rng.normal(size=(sims, steps))
+    log_increments = (r - 0.5 * sigma**2) * dt + sigma * math.sqrt(dt) * Z
+    log_paths = np.cumsum(log_increments, axis=1)
+    paths = S0 * np.exp(log_paths)  # (sims, steps)
 
-            # Barrier check
-            if barrier_type == "down-and-out":
-                if price <= H:
-                    knocked_out = True
-                    break
-            else:
-                # Extend for up-and-out, etc.
-                pass
+    # Barrier check
+    if barrier_type == "down-and-out":
+        knocked_out = np.any(paths <= H, axis=1)
+    else:
+        knocked_out = np.zeros(sims, dtype=bool)
 
-        if knocked_out:
-            payoffs.append(0.0)
-        else:
-            if option_type == "call":
-                payoffs.append(max(price - K, 0.0))
-            else:  # put
-                payoffs.append(max(K - price, 0.0))
+    final_prices = paths[:, -1]
 
-    return disc_factor * np.mean(payoffs)
+    if option_type == "call":
+        payoffs = np.maximum(final_prices - K, 0.0)
+    else:
+        payoffs = np.maximum(K - final_prices, 0.0)
+
+    payoffs[knocked_out] = 0.0
+    return float(disc_factor * np.mean(payoffs))
+
 
 def asian_option_arithmetic(
-    S0,
-    K,
-    T,
-    r,
-    sigma,
-    option_type="call",
-    steps=1000,
-    sims=10000,
-    rng_seed=None
-):
-    """
-    Monte Carlo pricing of an arithmetic average price Asian option.
+    S0: float,
+    K: float,
+    T: float,
+    r: float,
+    sigma: float,
+    option_type: str = "call",
+    steps: int = 1000,
+    sims: int = 10000,
+    rng_seed: int | None = None,
+) -> float:
+    """Price an arithmetic average Asian option via vectorised Monte Carlo.
 
-    The payoff depends on the average of prices over the path.
-    """
-    if rng_seed is not None:
-        np.random.seed(rng_seed)
+    Args:
+        S0: Initial spot price.
+        K: Strike price.
+        T: Time to maturity in years.
+        r: Risk-free rate.
+        sigma: Volatility.
+        option_type: ``"call"`` or ``"put"``.
+        steps: Time steps per path.
+        sims: Number of simulated paths.
+        rng_seed: Seed for reproducibility.
 
+    Returns:
+        Estimated option price.
+    """
+    rng = np.random.default_rng(rng_seed)
     dt = T / steps
     disc_factor = math.exp(-r * T)
-    payoffs = []
 
-    for _ in range(sims):
-        price = S0
-        path_prices = [price]
-        for __ in range(steps):
-            dW = np.random.normal(0, math.sqrt(dt))
-            price *= math.exp((r - 0.5 * sigma**2)*dt + sigma*dW)
-            path_prices.append(price)
-        average_price = np.mean(path_prices)
-        if option_type == "call":
-            payoffs.append(max(average_price - K, 0.0))
-        else:
-            payoffs.append(max(K - average_price, 0.0))
+    Z = rng.normal(size=(sims, steps))
+    log_increments = (r - 0.5 * sigma**2) * dt + sigma * math.sqrt(dt) * Z
+    log_paths = np.cumsum(log_increments, axis=1)
+    paths = S0 * np.exp(log_paths)
 
-    return disc_factor * np.mean(payoffs)
+    # Include S0 in average
+    full_paths = np.column_stack([np.full(sims, S0), paths])
+    avg_prices = np.mean(full_paths, axis=1)
+
+    if option_type == "call":
+        payoffs = np.maximum(avg_prices - K, 0.0)
+    else:
+        payoffs = np.maximum(K - avg_prices, 0.0)
+
+    return float(disc_factor * np.mean(payoffs))

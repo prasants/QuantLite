@@ -1,39 +1,60 @@
+"""Monte Carlo simulation utilities for backtesting and scenario analysis."""
+
+from __future__ import annotations
+
+from typing import Any, Callable
+
 import numpy as np
 import pandas as pd
+
 from .backtesting import run_backtest
 
+__all__ = ["run_monte_carlo_sims"]
+
+
 def run_monte_carlo_sims(
-    price_data,
-    signal_function,
-    n_sims=100,
-    noise_scale=0.01,
-    mode="perturb",
-    rng_seed=None
-):
+    price_data: pd.Series,
+    signal_function: Callable[[int, pd.Series], int],
+    n_sims: int = 100,
+    noise_scale: float = 0.01,
+    mode: str = "perturb",
+    rng_seed: int | None = None,
+) -> list[dict[str, Any]]:
+    """Run multiple backtests on perturbed or synthetic price paths.
+
+    Args:
+        price_data: Base price series.
+        signal_function: Signal callable ``(idx, price_data) -> {-1, 0, 1}``.
+        n_sims: Number of simulations.
+        noise_scale: Scale of perturbation noise.
+        mode: One of ``"perturb"``, ``"gbm"``, or ``"replace"``.
+        rng_seed: Seed for reproducibility.
+
+    Returns:
+        List of backtest result dicts.
+
+    Raises:
+        ValueError: On invalid ``mode`` or non-Series input.
     """
-    (Unchanged from previous) Runs multiple random simulations for a single-asset case.
-    """
-    if rng_seed is not None:
-        np.random.seed(rng_seed)
+    rng = np.random.default_rng(rng_seed)
 
     if not isinstance(price_data, pd.Series):
         raise ValueError("price_data must be a pandas Series")
 
-    results = []
+    results: list[dict[str, Any]] = []
     base_index = price_data.index
-    base_values = price_data.values
+    base_values = price_data.values.astype(float)
 
     for _ in range(n_sims):
         if mode == "perturb":
-            noise = np.random.normal(loc=0.0, scale=noise_scale, size=len(base_values))
+            noise = rng.normal(loc=0.0, scale=noise_scale, size=len(base_values))
             sim_vals = base_values * (1 + noise)
         elif mode == "gbm":
-            sim_vals = _simulate_gbm_series(base_values[0], len(base_values))
+            sim_vals = _simulate_gbm_series(base_values[0], len(base_values), rng=rng)
         elif mode == "replace":
-            daily_returns = np.random.normal(loc=0.0, scale=noise_scale, size=len(base_values) - 1)
-            sim_vals = [base_values[0]]
-            for dr in daily_returns:
-                sim_vals.append(sim_vals[-1] * (1 + dr))
+            daily_returns = rng.normal(loc=0.0, scale=noise_scale, size=len(base_values) - 1)
+            cum_returns = np.concatenate([[0.0], np.cumsum(np.log1p(daily_returns))])
+            sim_vals = base_values[0] * np.exp(cum_returns)
         else:
             raise ValueError("Unknown mode. Choose from ['perturb', 'gbm', 'replace'].")
 
@@ -43,76 +64,24 @@ def run_monte_carlo_sims(
 
     return results
 
-def multi_asset_correlated_sim(
-    S0_list,
-    mu_list,
-    cov_matrix,
-    steps=252,
-    dt=1/252,
-    rng_seed=None
-):
-    """
-    Generates correlated multi-asset price paths using a GBM approach.
 
-    Parameters
-    ----------
-    S0_list : list of floats
-        Initial prices for each asset (e.g., [100.0, 50.0]).
-    mu_list : list of floats
-        Annual drift for each asset (e.g., [0.05, 0.02] for 5% and 2%).
-    cov_matrix : 2D numpy array
-        Covariance matrix for the assets' returns. Should be size NxN where N is len(S0_list).
-    steps : int
-        Number of time steps to simulate.
-    dt : float
-        Time step in years (1/252 for daily).
-    rng_seed : int, optional
-        Seed for reproducibility.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame of shape (steps+1, len(S0_list)), each column is an asset price path.
-        Index is a simple range for time steps (0 to steps).
-    """
-    if rng_seed is not None:
-        np.random.seed(rng_seed)
-
-    n_assets = len(S0_list)
-    if len(mu_list) != n_assets:
-        raise ValueError("mu_list must have the same length as S0_list")
-    if cov_matrix.shape != (n_assets, n_assets):
-        raise ValueError("cov_matrix dimension mismatch with S0_list")
-
-    # Cholesky decomposition for correlation
-    L = np.linalg.cholesky(cov_matrix)
-
-    # Initialize the result array
-    prices = np.zeros((steps + 1, n_assets))
-    prices[0, :] = S0_list
-
-    for t in range(1, steps + 1):
-        # Draw standard normal
-        z = np.random.normal(size=n_assets)
-        # Correlate them
-        correlated_z = L @ z
-
-        for i in range(n_assets):
-            # GBM step
-            dW = correlated_z[i] * np.sqrt(dt)
-            drift = (mu_list[i] - 0.5 * cov_matrix[i, i]) * dt
-            prices[t, i] = prices[t - 1, i] * np.exp(drift + dW)
-
-    columns = [f"Asset_{i}" for i in range(n_assets)]
-    return pd.DataFrame(prices, columns=columns)
-
-def _simulate_gbm_series(S0, steps, mu=0.05, sigma=0.2, dt=1/252):
-    """
-    A helper for single-asset GBM (unchanged from older version).
-    """
-    vals = [S0]
-    for _ in range(steps - 1):
-        dW = np.random.normal(0, np.sqrt(dt))
-        new_val = vals[-1] * np.exp((mu - 0.5*sigma**2)*dt + sigma*dW)
-        vals.append(new_val)
-    return np.array(vals)
+def _simulate_gbm_series(
+    S0: float,
+    n_points: int,
+    mu: float = 0.05,
+    sigma: float = 0.2,
+    dt: float = 1 / 252,
+    rng: np.random.Generator | None = None,
+) -> np.ndarray:
+    """Generate a single GBM path (helper for MC sims)."""
+    if rng is None:
+        rng = np.random.default_rng()
+    steps = n_points - 1
+    if steps <= 0:
+        return np.array([S0])
+    dW = rng.normal(0, np.sqrt(dt), size=steps)
+    log_returns = (mu - 0.5 * sigma**2) * dt + sigma * dW
+    prices = np.empty(n_points)
+    prices[0] = S0
+    prices[1:] = S0 * np.exp(np.cumsum(log_returns))
+    return prices

@@ -1,2 +1,1 @@
-# __init__.py in instruments
-
+"""Financial instruments: options, bonds, and exotic derivatives."""

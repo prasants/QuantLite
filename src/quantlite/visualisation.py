@@ -1,11 +1,40 @@
-import pandas as pd
-import numpy as np
+"""Basic visualisation utilities for time series and equity curves."""
+
+from __future__ import annotations
+
+from typing import Any
+
 import matplotlib.pyplot as plt
 import mplfinance as mpf
+import numpy as np
+import pandas as pd
 from scipy.stats import norm
 
-def plot_time_series(data, title="Time Series", indicators=None, figsize=(10, 5), grid=True):
-    # (Same as before)
+__all__ = [
+    "plot_time_series",
+    "plot_ohlc",
+    "plot_return_distribution",
+    "plot_equity_curve",
+    "plot_multiple_equity_curves",
+]
+
+
+def plot_time_series(
+    data: pd.Series | pd.DataFrame,
+    title: str = "Time Series",
+    indicators: dict[str, pd.Series] | None = None,
+    figsize: tuple[float, float] = (10, 5),
+    grid: bool = True,
+) -> None:
+    """Plot one or more time series.
+
+    Args:
+        data: Series or DataFrame to plot.
+        title: Chart title.
+        indicators: Optional dict of overlay series.
+        figsize: Figure size in inches.
+        grid: Whether to show gridlines.
+    """
     if isinstance(data, pd.Series):
         data = data.to_frame("Main Series")
 
@@ -15,7 +44,7 @@ def plot_time_series(data, title="Time Series", indicators=None, figsize=(10, 5)
 
     if indicators:
         for label, series in indicators.items():
-            plt.plot(series.index, series.values, label=label, linestyle='--')
+            plt.plot(series.index, series.values, label=label, linestyle="--")
 
     plt.title(title)
     plt.xlabel("Date / Index")
@@ -25,25 +54,56 @@ def plot_time_series(data, title="Time Series", indicators=None, figsize=(10, 5)
     plt.legend()
     plt.show()
 
-def plot_ohlc(df, title="Candlestick Chart", type="candle", volume=True, style="yahoo"):
-    # (Same as before)
+
+def plot_ohlc(
+    df: pd.DataFrame,
+    title: str = "Candlestick Chart",
+    type: str = "candle",
+    volume: bool = True,
+    style: str = "yahoo",
+) -> None:
+    """Plot an OHLC candlestick chart using mplfinance.
+
+    Args:
+        df: DataFrame with Open, High, Low, Close columns and DatetimeIndex.
+        title: Chart title.
+        type: Chart type (``"candle"``, ``"ohlc"``, etc.).
+        volume: Whether to show volume subplot.
+        style: mplfinance style name.
+
+    Raises:
+        ValueError: If required columns are missing.
+    """
     if not {"Open", "High", "Low", "Close"}.issubset(df.columns):
         raise ValueError("DataFrame must have columns: Open, High, Low, Close")
 
     mpf.plot(
-        df, 
+        df,
         type=type,
         volume=volume if "Volume" in df.columns else False,
         style=style,
-        title=title
+        title=title,
     )
 
-def plot_return_distribution(returns, title="Return Distribution", bins=50, figsize=(8, 4)):
-    # (Same as before)
+
+def plot_return_distribution(
+    returns: pd.Series | list[float] | np.ndarray,
+    title: str = "Return Distribution",
+    bins: int = 50,
+    figsize: tuple[float, float] = (8, 4),
+) -> None:
+    """Plot a histogram of returns with a KDE overlay.
+
+    Args:
+        returns: Return series.
+        title: Chart title.
+        bins: Number of histogram bins.
+        figsize: Figure size.
+    """
     returns = pd.Series(returns).dropna()
     plt.figure(figsize=figsize)
-    plt.hist(returns, bins=bins, density=True, alpha=0.6, color='g', label='Histogram')
-    returns.plot(kind='kde', label='KDE', color='black')
+    plt.hist(returns, bins=bins, density=True, alpha=0.6, color="g", label="Histogram")
+    returns.plot(kind="kde", label="KDE", color="black")
     plt.title(title)
     plt.xlabel("Return")
     plt.ylabel("Density")
@@ -51,13 +111,24 @@ def plot_return_distribution(returns, title="Return Distribution", bins=50, figs
     plt.grid(alpha=0.3)
     plt.show()
 
-def plot_equity_curve(equity_series, drawdowns=False, figsize=(10,5)):
-    # (Same as before)
+
+def plot_equity_curve(
+    equity_series: pd.Series | list[float],
+    drawdowns: bool = False,
+    figsize: tuple[float, float] = (10, 5),
+) -> None:
+    """Plot an equity curve with optional drawdown shading.
+
+    Args:
+        equity_series: Portfolio value series.
+        drawdowns: Whether to shade drawdown regions.
+        figsize: Figure size.
+    """
     if not isinstance(equity_series, pd.Series):
         equity_series = pd.Series(equity_series)
 
     plt.figure(figsize=figsize)
-    plt.plot(equity_series.index, equity_series.values, label='Equity Curve')
+    plt.plot(equity_series.index, equity_series.values, label="Equity Curve")
     plt.title("Equity Curve")
     plt.xlabel("Date / Index")
     plt.ylabel("Value")
@@ -67,37 +138,35 @@ def plot_equity_curve(equity_series, drawdowns=False, figsize=(10,5)):
         roll_max = equity_series.cummax()
         dd = (equity_series - roll_max) / roll_max
         dd_mask = dd < 0
-        plt.fill_between(equity_series.index, equity_series.values, roll_max, where=dd_mask, color='red', alpha=0.2, label='Drawdown')
+        plt.fill_between(
+            equity_series.index, equity_series.values, roll_max,
+            where=dd_mask, color="red", alpha=0.2, label="Drawdown",
+        )
 
     plt.legend()
     plt.show()
 
-def plot_multiple_equity_curves(
-    curves_dict,
-    title="Multiple Equity Curves",
-    rolling_sharpe=False,
-    window=30,
-    figsize=(10,5)
-):
-    """
-    Plots multiple equity curves on the same figure. 
-    Optionally shows their rolling Sharpe ratio in a sub-plot.
 
-    Parameters
-    ----------
-    curves_dict : dict
-        { "Label A": pd.Series, "Label B": pd.Series, ... }
-        Each value should be an equity curve (e.g., from a backtest).
-    rolling_sharpe : bool
-        If True, create a second subplot showing rolling Sharpe for each curve.
-    window : int
-        Rolling window size (in days) for Sharpe.
+def plot_multiple_equity_curves(
+    curves_dict: dict[str, pd.Series],
+    title: str = "Multiple Equity Curves",
+    rolling_sharpe: bool = False,
+    window: int = 30,
+    figsize: tuple[float, float] = (10, 5),
+) -> None:
+    """Plot multiple equity curves, optionally with rolling Sharpe subplots.
+
+    Args:
+        curves_dict: Mapping of label to equity Series.
+        title: Chart title.
+        rolling_sharpe: Whether to add a rolling Sharpe subplot.
+        window: Rolling window size for Sharpe calculation.
+        figsize: Figure size.
     """
-    # Convert all to same date index (if possible)
     plt.figure(figsize=figsize)
 
     n_subplots = 2 if rolling_sharpe else 1
-    ax1 = plt.subplot(n_subplots,1,1)
+    ax1 = plt.subplot(n_subplots, 1, 1)
     ax1.set_title(title)
 
     for label, eq in curves_dict.items():
@@ -110,15 +179,13 @@ def plot_multiple_equity_curves(
     ax1.legend()
 
     if rolling_sharpe:
-        ax2 = plt.subplot(n_subplots,1,2)
+        ax2 = plt.subplot(n_subplots, 1, 2)
         ax2.set_title("Rolling Sharpe")
         for label, eq in curves_dict.items():
             eq = eq.sort_index()
-            # Compute daily returns
             daily_returns = eq.pct_change().dropna()
             roll_sharpe = _rolling_sharpe(daily_returns, window=window)
             ax2.plot(roll_sharpe.index, roll_sharpe.values, label=f"{label} RS")
-
         ax2.set_xlabel("Date / Index")
         ax2.set_ylabel("Sharpe")
         ax2.grid(alpha=0.3)
@@ -127,13 +194,9 @@ def plot_multiple_equity_curves(
     plt.tight_layout()
     plt.show()
 
-def _rolling_sharpe(returns, window=30):
-    """
-    Computes a rolling Sharpe ratio over a given window,
-    assuming a 0% risk-free rate for simplicity.
-    """
+
+def _rolling_sharpe(returns: pd.Series, window: int = 30) -> pd.Series:
+    """Compute rolling Sharpe ratio (assumes 0% risk-free rate)."""
     roll_mean = returns.rolling(window).mean()
     roll_std = returns.rolling(window).std()
-    # avoid division by zero
-    sharpe = roll_mean / (roll_std + 1e-9)
-    return sharpe
+    return roll_mean / (roll_std + 1e-9)

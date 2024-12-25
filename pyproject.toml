@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "QuantLite"
+version = "0.1.0"
+description = "A robust quant finance library"
+requires-python = ">=3.8"
+
+# The license field references the file we just created
+license = { file = "LICENSE" }
+
+readme = "README.md"
+authors = [
+  { name = "Prasant Sudhakaran", email = "code@prasant.net" }
+]
+keywords = ["quant", "finance", "monte carlo", "exotic options"]
+
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "matplotlib",
+  "mplfinance"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

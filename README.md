@@ -1,209 +1,131 @@
 # QuantLite
 
-QuantLite is a feature-rich Python library for quantitative finance. It spans everything from **data generation** and **Monte Carlo** to **exotic options pricing**, **enhanced backtesting**, and **advanced visualisations**. Whether you’re exploring novel strategies or needing robust analytics, QuantLite aims to cover all your bases.
+A fat-tail-native quantitative finance toolkit for Python.
 
-## Table of Contents
-
-*   [Installation](#installation)
-*   [Modules Overview](#modules-overview)
-    *   [Data Generation](#data-generation)
-    *   [Instruments (Bond, Vanilla Options, Exotic Options)](#instruments)
-    *   [Monte Carlo](#monte-carlo)
-    *   [Backtesting](#backtesting)
-    *   [Visualisation](#visualisation)
-*   [Usage Examples & Synergy](#usage-examples--synergy)
-    *   [1. Data Generation + Backtesting + Visualisation](#1-data-generation--backtesting--visualisation)
-    *   [2. Monte Carlo + Backtesting + Visualisation](#2-monte-carlo--backtesting--visualisation)
-    *   [3. Exotic Options Pricing](#3-exotic-options-pricing)
-*   [Roadmap](#roadmap)
-*   [Licence](#license)
-*   [Contact/Support](#contact)
+QuantLite provides stochastic process generators, option and bond pricing, risk metrics, extreme value theory, fat-tailed distributions, and clean visualisation. It is designed for practitioners who take tail risk seriously: every simulation supports non-Gaussian dynamics, every risk metric goes beyond mean-variance, and every chart follows Stephen Few's principles of maximum data-ink ratio.
 
 ## Installation
-
-QuantLite is available on [PyPI](https://pypi.org/project/quantlite/). Install it simply by:
 
 ```bash
 pip install quantlite
 ```
 
-(Ensure you’re using Python 3.8+.)
-## Modules Overview
+For development:
 
-### 1. Data Generation
-Location: `quantlite.data_generation`
-* `geometric_brownian_motion`: Single-asset GBM path generation.
-* `correlated_gbm`: Multi-asset correlated path generation using covariance matrices.
-* `ornstein_uhlenbeck`: Mean-reverting process.
-* `merton_jump_diffusion`: GBM with Poisson jump arrivals (Merton’s model).
-
-#### Example:
-```python
-import quantlite.data_generation as qd
-prices = qd.geometric_brownian_motion(S0=100, mu=0.05, sigma=0.2, steps=252)
-print(prices[:10])  # First 10 days
-```
-### 2. Instruments (Bond, Vanilla Options, Exotic Options)
-Location: `quantlite.instruments`
-
-* Bond Pricing (bond_pricing.py): bond_price, bond_yield_to_maturity, bond_duration, etc.
-* Vanilla Options (option_pricing.py): black_scholes_call, black_scholes_put, plus Greeks.
-* Exotic Options (exotic_options.py): barrier_option_knock_out, asian_option_arithmetic
-
-Example:
-```python
-from quantlite.instruments.option_pricing import black_scholes_call
-call_val = black_scholes_call(S=100, K=95, T=1, r=0.01, sigma=0.2)
-print("Vanilla call option price:", call_val)
+```bash
+pip install quantlite[dev]
 ```
 
-### 3. Monte Carlo
-Location: `quantlite.monte_carlo`
+## Quick Start
 
-* run_monte_carlo_sims: Single-asset multi-sim approach with different random "modes."
-* multi_asset_correlated_sim: Direct correlated multi-asset simulation (similar to * data_generation.correlated_gbm, but designed for scenario testing).
-
-Example:
+### Risk Metrics
 
 ```python
-import pandas as pd
-from quantlite.monte_carlo import run_monte_carlo_sims
+from quantlite.risk.metrics import value_at_risk, cvar, return_moments
 
-price_data = pd.Series([100, 101, 99, 102], index=[1,2,3,4])
-def always_buy(idx, series):
-    return 1
+returns = [...]  # your daily returns
 
-mc_results = run_monte_carlo_sims(price_data, always_buy, n_sims=5)
-for i, res in enumerate(mc_results):
-    print("Sim", i, "final value:", res["final_value"])
-```
-### 4. Backtesting
-Location: `quantlite.backtesting`
-
-A robust function `run_backtest` with partial capital, short-selling toggles, and transaction cost modelling.
-
-Example:
-```python
-def run_backtest(
-    price_data,
-    signal_function,
-    initial_capital=10_000.0,
-    fee=0.0,
-    partial_capital=False,
-    capital_fraction=1.0,
-    allow_short=True,
-    per_share_cost=0.0
-):
+var_95 = value_at_risk(returns, alpha=0.05, method="cornish-fisher")
+es_95 = cvar(returns, alpha=0.05)
+moments = return_moments(returns)
+print(moments)  # ReturnMoments(mean=..., vol=..., skew=..., kurt=...)
 ```
 
-### 5. Visualisation
-Location: `quantlite.visualisation`
-
-* `plot_time_series`: Basic line chart with optional indicators.
-* `plot_ohlc`: Candlesticks or OHLC bars via mplfinance.
-* `plot_return_distribution`: Histogram + KDE for returns.
-* `plot_equity_curve`: Equity curve with optional drawdown shading.
-* `plot_multiple_equity_curves`: Compare multiple strategies and optionally show rolling Sharpe.
-
-Example:
+### Extreme Value Theory
 
 ```python
-from quantlite.visualisation import plot_equity_curve
-# Suppose we have a backtest result with result["portfolio_value"]
-plot_equity_curve(result["portfolio_value"], drawdowns=True)
-```
-## Usage Examples & Synergy
-Below are extended examples to show how modules can be combined.
+from quantlite.risk.evt import fit_gpd, return_level, tail_risk_summary
 
-### 1. Data Generation + Backtesting + Visualisation
-
-```python
-import quantlite.data_generation as qd
-from quantlite.backtesting import run_backtest
-from quantlite.visualisation import plot_equity_curve
-import pandas as pd
-
-# 1. Create synthetic price data
-prices_array = qd.merton_jump_diffusion(S0=100, mu=0.06, sigma=0.25, steps=252, rng_seed=42)
-prices_series = pd.Series(prices_array, index=range(253))
-
-# 2. Simple signal: Buy if today's price < yesterday's
-def naive_signal(idx, series):
-    if idx == 0:
-        return 0
-    return 1 if series.iloc[idx] < series.iloc[idx-1] else 0
-
-# 3. Run backtest with partial capital
-result = run_backtest(prices_series, naive_signal, fee=1.0, partial_capital=True, capital_fraction=0.5)
-
-# 4. Visualise
-plot_equity_curve(result["portfolio_value"], drawdowns=True)
-print("Final portfolio value:", result["final_value"])
+gpd = fit_gpd(returns)
+loss_100 = return_level(gpd, return_period=25000)  # 1-in-100-year daily loss
+summary = tail_risk_summary(returns)
+print(summary)
 ```
 
-### 2. Monte Carlo + Backtesting + Visualisation
+### Fat-Tailed Distributions
+
 ```python
-import pandas as pd
-from quantlite.monte_carlo import run_monte_carlo_sims
-from quantlite.visualisation import plot_multiple_equity_curves
-
-prices = pd.Series([100, 101, 102, 103, 99, 98, 101, 102], index=range(8))
-def always_long(idx, series):
-    return 1
-
-# Multiple sims
-results = run_monte_carlo_sims(prices, always_long, n_sims=3, mode="replace")
-curves = {}
-for i, res in enumerate(results):
-    curves[f"Sim {i}"] = res["portfolio_value"]
-
-plot_multiple_equity_curves(curves_dict=curves, rolling_sharpe=True)
-```
-
-### 3. Exotic Options Pricing
-```python
-from quantlite.instruments.exotic_options import barrier_option_knock_out, asian_option_arithmetic
-
-barrier_val = barrier_option_knock_out(
-    S0=120, K=100, H=90, T=1.0, r=0.01, sigma=0.2,
-    option_type="call", barrier_type="down-and-out",
-    steps=252, sims=10000, rng_seed=42
+from quantlite.distributions.fat_tails import (
+    student_t_process,
+    regime_switching_gbm,
+    kou_double_exponential_jump,
+    RegimeParams,
 )
-print("Knock-out barrier call value:", barrier_val)
+import numpy as np
 
-asian_val = asian_option_arithmetic(
-    S0=120, K=100, T=1.0, r=0.01, sigma=0.2,
-    option_type="call", steps=252, sims=10000, rng_seed=42
-)
-print("Arithmetic average Asian call value:", asian_val)
+# Student-t returns (power-law tails)
+rets = student_t_process(nu=4, sigma=0.02, n_steps=1000, rng_seed=42)
+
+# Regime-switching GBM
+calm = RegimeParams(mu=0.08, sigma=0.12)
+crisis = RegimeParams(mu=-0.15, sigma=0.45)
+trans = np.array([[0.98, 0.02], [0.10, 0.90]])
+prices, regimes = regime_switching_gbm([calm, crisis], trans, n_steps=2520)
+
+# Kou's double-exponential jump diffusion
+prices = kou_double_exponential_jump(S0=100, lam=2.0, rng_seed=42)
 ```
 
+### Visualisation (Stephen Few Theme)
 
-## Roadmap
+```python
+from quantlite.viz.theme import apply_few_theme, few_figure
+from quantlite.viz.risk import plot_tail_distribution, plot_risk_dashboard
 
-1. More Data Generation: 
-    * Stochastic volatility (Heston model)
-    * Regime-switching
-2. Deeper Monte Carlo: 
-    * Correlated jumps
-    * Advanced param sweeps
-    * Multi-factor models
-3. Backtesting Enhancements: 
-    * Multi-asset portfolio rebalancing
-    * Advanced slippage
-    * Partial fills.
-4. More Exotic Instruments: 
-    * Up-and-out barrier
-    * Lookback options
-5. Interactive Visualisation:
-    * Plotly or Bokeh integration 
-    * Auto-report generation.
+apply_few_theme()
+fig, ax = plot_tail_distribution(returns, gpd_fit=gpd)
+fig, axes = plot_risk_dashboard(returns)
+```
+
+### Option Pricing
+
+```python
+from quantlite import black_scholes_call, black_scholes_greeks
+
+price = black_scholes_call(S=100, K=95, T=1.0, r=0.05, sigma=0.2)
+greeks = black_scholes_greeks(S=100, K=95, T=1.0, r=0.05, sigma=0.2)
+print(greeks)  # Greeks(delta=..., gamma=..., vega=..., theta=..., rho=...)
+```
+
+### Monte Carlo Simulation
+
+```python
+from quantlite import geometric_brownian_motion, merton_jump_diffusion
+
+gbm_path = geometric_brownian_motion(S0=100, sigma=0.3, steps=252, rng_seed=42)
+mjd_path = merton_jump_diffusion(S0=100, lamb=1.0, jump_std=0.1, rng_seed=42)
+```
+
+## Features
+
+**Risk Metrics:** VaR (historical, parametric, and Cornish-Fisher), CVaR/Expected Shortfall, Sortino ratio, Calmar ratio, max drawdown with duration, Omega ratio, tail ratio, and return moments.
+
+**Extreme Value Theory:** Generalised Pareto Distribution fitting, Generalised Extreme Value fitting, Hill tail index estimator, Peaks Over Threshold method, return level estimation, and comprehensive tail risk summaries.
+
+**Fat-Tailed Distributions:** Student-t process, Levy alpha-stable process, Markov regime-switching GBM, and Kou's double-exponential jump diffusion.
+
+**Instruments:** Black-Scholes pricing and Greeks, bond pricing with duration and YTM, vectorised Monte Carlo for barrier and Asian options.
+
+**Data Generation:** GBM, correlated multi-asset GBM, Ornstein-Uhlenbeck, and Merton jump diffusion. All using NumPy's modern Generator API for thread-safe reproducibility.
+
+**Visualisation:** Stephen Few-inspired theme with muted palette, direct labels, bullet graphs, sparklines, tail distribution plots, return level charts, drawdown charts, and single-page risk dashboards.
+
+## Design Principles
+
+- **Fat tails by default.** Gaussian is available but never assumed. Every risk metric, every simulation, every test accounts for the reality that markets bite.
+- **Modern Python.** Type hints throughout, dataclass return types, NumPy Generator API, Python 3.10+.
+- **Vectorised.** Monte Carlo simulations use NumPy broadcasting, not Python loops.
+- **Honest charts.** Following Stephen Few: maximum data-ink ratio, no chartjunk, horizontal gridlines only, direct labels over legends.
+
+## Requirements
+
+- Python >= 3.10
+- NumPy, pandas, SciPy, matplotlib, mplfinance
 
 ## Licence
-This project is distributed under the MIT License.
-See the LICENSE file for the full text.
 
-## Contact/Support
-**Need help or want to contribute?**  
-> Please open an issue on our [GitHub repo](https://github.com/prasants/quantlite).
-    
+MIT. See [LICENSE](LICENSE) for details.
+
+## Author
+
+Prasant Sudhakaran

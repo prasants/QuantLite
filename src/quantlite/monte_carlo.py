@@ -7,7 +7,7 @@ from typing import Any, Callable
 import numpy as np
 import pandas as pd
 
-from .backtesting import run_backtest
+from .backtesting.legacy import legacy_run_backtest as run_backtest
 
 __all__ = ["run_monte_carlo_sims"]
 

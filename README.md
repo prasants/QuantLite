@@ -116,6 +116,48 @@ weights = hrp_weights(returns_df)
 print(weights)  # OrderedDict([('SPY', 0.32), ('TLT', 0.28), ...])
 ```
 
+### Portfolio Construction
+
+```python
+from quantlite.portfolio import (
+    risk_parity_weights, mean_cvar_weights, max_sharpe_weights,
+    hrp_weights, black_litterman, kelly_criterion,
+)
+
+# Risk parity: equal risk contribution per asset
+rp = risk_parity_weights(returns_df)
+print(rp.weights)  # {'SPY': 0.28, 'TLT': 0.42, 'GLD': 0.30}
+
+# CVaR-optimised (Taleb-approved): minimise tail risk
+cvar_port = mean_cvar_weights(returns_df, alpha=0.05)
+
+# Black-Litterman with views
+post_mu, post_cov = black_litterman(
+    returns_df, market_caps=caps, views={"SPY": 0.08}, view_confidences={"SPY": 0.7},
+)
+```
+
+### Backtesting: Regime-Aware Risk Parity with Circuit Breakers
+
+```python
+from quantlite.regimes.hmm import fit_regime_model
+from quantlite.portfolio import risk_parity_weights
+from quantlite.backtesting import run_backtest, BacktestConfig, RiskLimits
+
+model = fit_regime_model(returns, n_regimes=2, rng_seed=42)
+
+def regime_rp(ctx):
+    return risk_parity_weights(ctx.historical_returns).weights
+
+result = run_backtest(
+    price_data,
+    regime_rp,
+    config=BacktestConfig(risk_limits=RiskLimits(max_drawdown=-0.15)),
+    regime_labels=model.regime_labels,
+)
+print(result.metrics)  # Sharpe, CVaR, max DD, Sortino, etc.
+```
+
 ### Regime Detection
 
 ```python
@@ -150,6 +192,12 @@ var = regime_aware_var(returns, model.regime_labels, alpha=0.05)
 **Copulas and Dependency:** Gaussian, Student-t, Clayton, Gumbel, and Frank copulas with fitting, simulation, log-likelihood, and analytical tail dependence coefficients. Automatic model selection by AIC/BIC. Rolling, EWMA, and stress-conditional correlation. Rank correlation (Spearman, Kendall). Correlation breakdown testing.
 
 **Clustering and Allocation:** Hierarchical Risk Parity (Lopez de Prado) with correlation-distance clustering and recursive bisection. Quasi-diagonalisation for visual cluster analysis.
+
+**Portfolio Optimisation:** Mean-variance (Markowitz), minimum variance, mean-CVaR, risk parity (equal risk contribution), HRP, Black-Litterman with views, Kelly criterion (full and half), and maximum Sharpe tangency portfolio. All return a unified ``PortfolioWeights`` dataclass.
+
+**Rebalancing:** Calendar-based (daily, weekly, monthly, quarterly), threshold-triggered (drift-based), and tactical (regime-change-triggered) rebalancing strategies with full turnover tracking.
+
+**Backtesting:** Multi-asset production engine with fractional shares, configurable slippage models, transaction fees, risk limits with circuit breakers (max drawdown, daily loss limit, position size caps), regime-aware allocation, and comprehensive post-hoc analysis (monthly returns tables, rolling metrics, trade analysis, regime attribution).
 
 **Regime Detection:** Gaussian Hidden Markov Models via hmmlearn with automatic regime count selection by BIC. CUSUM and Bayesian online change-point detection (Adams and MacKay, 2007). Regime-conditional risk metrics, transition risk analysis, and regime-aware VaR.
 

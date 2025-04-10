@@ -1,4 +1,8 @@
-"""Single-asset signal-based backtesting engine."""
+"""Legacy single-asset signal-based backtesting engine.
+
+Preserved for backward compatibility. Prefer the multi-asset engine
+in ``quantlite.backtesting.engine`` for new work.
+"""
 
 from __future__ import annotations
 
@@ -6,12 +10,12 @@ from typing import Any, Callable
 
 import pandas as pd
 
-from .core.types import BacktestResult
+from ..core.types import BacktestResult
 
-__all__ = ["run_backtest"]
+__all__ = ["legacy_run_backtest"]
 
 
-def run_backtest(
+def legacy_run_backtest(
     price_data: pd.Series,
     signal_function: Callable[[int, pd.Series], int],
     initial_capital: float = 10_000.0,

@@ -2,12 +2,20 @@
 
 Provides stochastic process generators, option and bond pricing,
 risk metrics, extreme value theory, fat-tailed distributions,
-and Stephen Few-inspired visualisation.
+portfolio optimisation, multi-asset backtesting, and
+Stephen Few-inspired visualisation.
 """
 
 __version__ = "0.2.0"
 
-from .backtesting import run_backtest
+from .backtesting import (
+    BacktestConfig,
+    BacktestContext,
+    BacktestResult,
+    RiskLimits,
+    SlippageModel,
+    run_backtest,
+)
 from .data_generation import (
     correlated_gbm,
     geometric_brownian_motion,
@@ -42,6 +50,11 @@ __all__ = [
     "max_drawdown",
     # Backtesting
     "run_backtest",
+    "BacktestConfig",
+    "BacktestContext",
+    "BacktestResult",
+    "RiskLimits",
+    "SlippageModel",
     # Visualisation
     "plot_time_series",
 ]

@@ -1,8 +1,23 @@
 # QuantLite
 
-A fat-tail-native quantitative finance toolkit for Python.
+**A fat-tail-native quantitative finance toolkit for Python.**
 
-QuantLite provides stochastic process generators, option and bond pricing, risk metrics, extreme value theory, fat-tailed distributions, and clean visualisation. It is designed for practitioners who take tail risk seriously: every simulation supports non-Gaussian dynamics, every risk metric goes beyond mean-variance, and every chart follows Stephen Few's principles of maximum data-ink ratio.
+[![PyPI version](https://img.shields.io/pypi/v/quantlite)](https://pypi.org/project/quantlite/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+QuantLite is what pandas is to data manipulation, but for fat-tail quant finance. It provides honest modelling tools for markets that bite: extreme value theory, copula dependence structures, regime detection, fat-tailed distributions, and risk metrics that do not assume returns are Gaussian.
+
+Most quantitative finance libraries treat fat tails as an afterthought. QuantLite treats them as the starting point.
+
+## Key Differentiators
+
+- **Fat-tail-native**: Every risk metric, simulation, and optimisation accounts for non-Gaussian behaviour
+- **Extreme Value Theory**: GPD, GEV, Hill estimator, and Peaks Over Threshold for rigorous tail modelling
+- **Copula dependence**: Five copula families with tail dependence analysis, not just Pearson correlation
+- **Regime detection**: Hidden Markov Models and Bayesian changepoint detection for structural breaks
+- **Stephen Few visualisations**: Publication-quality charts following Few's principles of maximum data-ink ratio
+- **Production backtesting**: Multi-asset engine with circuit breakers, slippage models, and regime-aware allocation
 
 ## Installation
 
@@ -16,213 +31,495 @@ For development:
 pip install quantlite[dev]
 ```
 
-## Quick Start
+Optional dependency for HMM regime detection:
+
+```bash
+pip install hmmlearn
+```
+
+## Quickstart
+
+```python
+import numpy as np
+import quantlite as ql
+from quantlite.distributions.fat_tails import student_t_process
+from quantlite.risk.metrics import value_at_risk, cvar, return_moments
+from quantlite.risk.evt import tail_risk_summary
+
+# Generate fat-tailed returns (nu=4 gives realistic equity tail behaviour)
+returns = student_t_process(nu=4.0, mu=0.0003, sigma=0.012, n_steps=2520, rng_seed=42)
+
+# Standard risk metrics
+var_95 = value_at_risk(returns, alpha=0.05)
+cvar_95 = cvar(returns, alpha=0.05)
+moments = return_moments(returns)
+
+print(f"VaR (95%):         {var_95:.4f}")
+print(f"CVaR (95%):        {cvar_95:.4f}")
+print(f"Excess kurtosis:   {moments.kurtosis:.2f}")
+
+# Full tail risk analysis with EVT
+summary = tail_risk_summary(returns)
+print(f"Hill tail index:   {summary.hill_estimate.tail_index:.2f}")
+print(f"GPD shape (xi):    {summary.gpd_fit.shape:.4f}")
+print(f"1-in-100 loss:     {summary.return_level_100:.4f}")
+```
+
+## Modules
 
 ### Risk Metrics
 
+Classical and tail-aware risk measures: VaR (historical, parametric, Cornish-Fisher), CVaR, Sortino ratio, Calmar ratio, Omega ratio, tail ratio, and maximum drawdown with duration tracking.
+
 ```python
-from quantlite.risk.metrics import value_at_risk, cvar, return_moments
+from quantlite.risk.metrics import (
+    value_at_risk, cvar, sortino_ratio, calmar_ratio,
+    omega_ratio, tail_ratio, max_drawdown_duration, return_moments,
+)
 
-returns = [...]  # your daily returns
+# Cornish-Fisher VaR accounts for skewness and kurtosis
+cf_var = value_at_risk(returns, alpha=0.01, method="cornish-fisher")
+hist_var = value_at_risk(returns, alpha=0.01, method="historical")
+print(f"CF VaR (99%):   {cf_var:.4f}")
+print(f"Hist VaR (99%): {hist_var:.4f}")
 
-var_95 = value_at_risk(returns, alpha=0.05, method="cornish-fisher")
-es_95 = cvar(returns, alpha=0.05)
-moments = return_moments(returns)
-print(moments)  # ReturnMoments(mean=..., vol=..., skew=..., kurt=...)
+# Drawdown analysis
+dd = max_drawdown_duration(returns)
+print(f"Max drawdown: {dd.max_drawdown:.2%}, duration: {dd.duration} periods")
 ```
+
+[Detailed documentation: docs/risk.md](docs/risk.md)
 
 ### Extreme Value Theory
 
-```python
-from quantlite.risk.evt import fit_gpd, return_level, tail_risk_summary
+Rigorous tail modelling via the Generalised Pareto Distribution, Generalised Extreme Value distribution, Hill estimator, and Peaks Over Threshold method.
 
+```python
+from quantlite.risk.evt import fit_gpd, hill_estimator, return_level, tail_risk_summary
+
+# Fit GPD to the tail exceedances
 gpd = fit_gpd(returns)
-loss_100 = return_level(gpd, return_period=25000)  # 1-in-100-year daily loss
-summary = tail_risk_summary(returns)
-print(summary)
+print(f"GPD shape (xi): {gpd.shape:.4f}")
+print(f"GPD scale:      {gpd.scale:.4f}")
+print(f"Exceedances:    {gpd.n_exceedances} / {gpd.n_total}")
+
+# Estimate the 1-in-1000-day loss
+rl = return_level(gpd, return_period=1000)
+print(f"1-in-1000-day loss: {rl:.4f}")
+
+# Hill estimator for tail index
+hill = hill_estimator(returns)
+print(f"Tail index (alpha): {hill.tail_index:.2f}")
 ```
+
+[Detailed documentation: docs/evt.md](docs/evt.md)
 
 ### Fat-Tailed Distributions
 
+Generate realistic return series from Student-t, Levy stable, regime-switching GBM, and Kou's double-exponential jump-diffusion models.
+
 ```python
 from quantlite.distributions.fat_tails import (
-    student_t_process,
-    regime_switching_gbm,
-    kou_double_exponential_jump,
-    RegimeParams,
+    student_t_process, levy_stable_process,
+    regime_switching_gbm, kou_double_exponential_jump, RegimeParams,
 )
 import numpy as np
 
-# Student-t returns (power-law tails)
-rets = student_t_process(nu=4, sigma=0.02, n_steps=1000, rng_seed=42)
+# Student-t returns (nu=4 matches typical equity behaviour)
+t_returns = student_t_process(nu=4.0, mu=0.0003, sigma=0.012, n_steps=1260, rng_seed=42)
 
-# Regime-switching GBM
-calm = RegimeParams(mu=0.08, sigma=0.12)
-crisis = RegimeParams(mu=-0.15, sigma=0.45)
-trans = np.array([[0.98, 0.02], [0.10, 0.90]])
-prices, regimes = regime_switching_gbm([calm, crisis], trans, n_steps=2520)
+# Levy stable (alpha < 2 gives infinite variance)
+stable_returns = levy_stable_process(alpha=1.7, beta=-0.1, sigma=0.008, n_steps=1260, rng_seed=42)
 
-# Kou's double-exponential jump diffusion
-prices = kou_double_exponential_jump(S0=100, lam=2.0, rng_seed=42)
+# Regime-switching GBM (calm and crisis regimes)
+calm = RegimeParams(mu=0.08, sigma=0.15)
+crisis = RegimeParams(mu=-0.20, sigma=0.40)
+transition = np.array([[0.98, 0.02], [0.05, 0.95]])
+prices, regimes = regime_switching_gbm(
+    [calm, crisis], transition, n_steps=2520, rng_seed=42
+)
+
+# Kou's double-exponential jump-diffusion
+prices_kou = kou_double_exponential_jump(
+    S0=100, mu=0.05, sigma=0.2, lam=1.0, p=0.4,
+    eta1=10, eta2=5, n_steps=252, rng_seed=42,
+)
 ```
 
-### Visualisation (Stephen Few Theme)
+[Detailed documentation: docs/risk.md](docs/risk.md)
+
+### Copulas
+
+Five copula families for modelling dependence beyond linear correlation: Gaussian, Student-t, Clayton, Gumbel, and Frank. Each provides fitting, simulation, log-likelihood, and analytical tail dependence coefficients.
 
 ```python
-from quantlite.viz.theme import apply_few_theme, few_figure
-from quantlite.viz.risk import plot_tail_distribution, plot_risk_dashboard
+from quantlite.dependency.copulas import (
+    StudentTCopula, ClaytonCopula, select_best_copula,
+)
+import numpy as np
 
-apply_few_theme()
-fig, ax = plot_tail_distribution(returns, gpd_fit=gpd)
-fig, axes = plot_risk_dashboard(returns)
-```
+# Simulate correlated fat-tailed returns
+rng = np.random.default_rng(42)
+z = rng.multivariate_normal([0, 0], [[1, 0.6], [0.6, 1]], size=1000)
+data = np.column_stack([z[:, 0] * 0.02, z[:, 1] * 0.015])
 
-### Option Pricing
-
-```python
-from quantlite import black_scholes_call, black_scholes_greeks
-
-price = black_scholes_call(S=100, K=95, T=1.0, r=0.05, sigma=0.2)
-greeks = black_scholes_greeks(S=100, K=95, T=1.0, r=0.05, sigma=0.2)
-print(greeks)  # Greeks(delta=..., gamma=..., vega=..., theta=..., rho=...)
-```
-
-### Monte Carlo Simulation
-
-```python
-from quantlite import geometric_brownian_motion, merton_jump_diffusion
-
-gbm_path = geometric_brownian_motion(S0=100, sigma=0.3, steps=252, rng_seed=42)
-mjd_path = merton_jump_diffusion(S0=100, lamb=1.0, jump_std=0.1, rng_seed=42)
-```
-
-### Copulas and Dependency Modelling
-
-```python
-from quantlite.dependency.copulas import StudentTCopula, select_best_copula
-from quantlite.dependency.clustering import hrp_weights
-
-# Fit a Student-t copula (captures tail dependence)
+# Fit Student-t copula (captures tail dependence)
 cop = StudentTCopula()
-cop.fit(bivariate_data)
-print(cop.tail_dependence())  # {'lower': 0.23, 'upper': 0.23}
+cop.fit(data)
+td = cop.tail_dependence()
+print(f"Student-t copula: rho={cop.rho:.3f}, nu={cop.nu:.1f}")
+print(f"Lower tail dependence: {td['lower']:.3f}")
+print(f"Upper tail dependence: {td['upper']:.3f}")
 
-# Automatic copula selection by AIC
-best = select_best_copula(bivariate_data)
-print(best)  # CopulaFitResult(name='Student-t', AIC=..., BIC=...)
+# Automatic model selection by AIC
+best = select_best_copula(data)
+print(f"Best copula: {best.name} (AIC={best.aic:.1f})")
+```
 
-# Hierarchical Risk Parity allocation
+[Detailed documentation: docs/copulas.md](docs/copulas.md)
+
+### Correlation Analysis
+
+Rolling, exponentially-weighted, stress-conditional, and rank-based correlation measures.
+
+```python
+from quantlite.dependency.correlation import (
+    rolling_correlation, exponential_weighted_correlation,
+    stress_correlation, correlation_breakdown_test,
+)
+import pandas as pd
+import numpy as np
+
+# Simulate two equity return series
+rng = np.random.default_rng(42)
+n = 504
+rets = pd.DataFrame({
+    "Equities": rng.normal(0.0003, 0.012, n),
+    "Bonds": rng.normal(0.0001, 0.005, n),
+    "Commodities": rng.normal(0.0002, 0.015, n),
+})
+
+# EWMA correlation (more responsive to regime changes)
+ewma_corr = exponential_weighted_correlation(rets["Equities"], rets["Bonds"], halflife=30)
+
+# Stress correlation (correlation during drawdowns)
+stress_corr = stress_correlation(rets, threshold_percentile=10)
+print("Stress-period correlation matrix:")
+print(stress_corr)
+
+# Test for correlation breakdown
+test = correlation_breakdown_test(rets)
+print(f"Calm corr: {test['calm_corr']:.3f}, Stress corr: {test['stress_corr']:.3f}")
+print(f"p-value: {test['p_value']:.4f}")
+```
+
+### Hierarchical Risk Parity
+
+Lopez de Prado's HRP method produces diversified, stable portfolio weights without covariance matrix inversion.
+
+```python
+from quantlite.dependency.clustering import hrp_weights
+import pandas as pd
+import numpy as np
+
+rng = np.random.default_rng(42)
+returns_df = pd.DataFrame({
+    "US_Equity": rng.normal(0.0003, 0.012, 504),
+    "EU_Equity": rng.normal(0.0002, 0.014, 504),
+    "Govt_Bonds": rng.normal(0.0001, 0.004, 504),
+    "Gold": rng.normal(0.0001, 0.010, 504),
+    "REITs": rng.normal(0.0002, 0.013, 504),
+})
+
 weights = hrp_weights(returns_df)
-print(weights)  # OrderedDict([('SPY', 0.32), ('TLT', 0.28), ...])
+for asset, w in weights.items():
+    print(f"  {asset}: {w:.2%}")
 ```
 
-### Portfolio Construction
-
-```python
-from quantlite.portfolio import (
-    risk_parity_weights, mean_cvar_weights, max_sharpe_weights,
-    hrp_weights, black_litterman, kelly_criterion,
-)
-
-# Risk parity: equal risk contribution per asset
-rp = risk_parity_weights(returns_df)
-print(rp.weights)  # {'SPY': 0.28, 'TLT': 0.42, 'GLD': 0.30}
-
-# CVaR-optimised (Taleb-approved): minimise tail risk
-cvar_port = mean_cvar_weights(returns_df, alpha=0.05)
-
-# Black-Litterman with views
-post_mu, post_cov = black_litterman(
-    returns_df, market_caps=caps, views={"SPY": 0.08}, view_confidences={"SPY": 0.7},
-)
-```
-
-### Backtesting: Regime-Aware Risk Parity with Circuit Breakers
-
-```python
-from quantlite.regimes.hmm import fit_regime_model
-from quantlite.portfolio import risk_parity_weights
-from quantlite.backtesting import run_backtest, BacktestConfig, RiskLimits
-
-model = fit_regime_model(returns, n_regimes=2, rng_seed=42)
-
-def regime_rp(ctx):
-    return risk_parity_weights(ctx.historical_returns).weights
-
-result = run_backtest(
-    price_data,
-    regime_rp,
-    config=BacktestConfig(risk_limits=RiskLimits(max_drawdown=-0.15)),
-    regime_labels=model.regime_labels,
-)
-print(result.metrics)  # Sharpe, CVaR, max DD, Sortino, etc.
-```
+[Detailed documentation: docs/copulas.md](docs/copulas.md)
 
 ### Regime Detection
+
+Hidden Markov Models and Bayesian changepoint detection for identifying structural breaks in market behaviour.
 
 ```python
 from quantlite.regimes.hmm import fit_regime_model, select_n_regimes
 from quantlite.regimes.changepoint import detect_changepoints
 from quantlite.regimes.conditional import conditional_metrics, regime_aware_var
+from quantlite.distributions.fat_tails import student_t_process
 
-# Fit a 2-regime Hidden Markov Model
+# Generate a return series with embedded regime structure
+returns = student_t_process(nu=4, mu=0.0003, sigma=0.015, n_steps=1260, rng_seed=42)
+
+# Fit a 2-regime HMM (requires hmmlearn)
 model = fit_regime_model(returns, n_regimes=2, rng_seed=42)
-print(model.means)        # [-0.002, 0.001] (crisis vs calm)
-print(model.transition_matrix)
+print(f"Regime means: {model.means}")
+print(f"Regime variances: {model.variances}")
+print(f"Stationary distribution: {model.stationary_distribution}")
 
-# Automatic regime count selection by BIC
-best_model = select_n_regimes(returns, max_regimes=4)
+# Conditional risk metrics per regime
+cond = conditional_metrics(returns, model.regime_labels)
+for regime, metrics in cond.items():
+    print(f"Regime {regime}: mean={metrics['mean']:.5f}, vol={metrics['volatility']:.5f}")
 
-# Change-point detection (CUSUM or Bayesian)
-cps = detect_changepoints(returns, method="bayesian", penalty=100)
+# Regime-aware VaR
+rvar = regime_aware_var(returns, model.regime_labels, alpha=0.05)
+print(f"Regime-aware VaR (95%): {rvar:.4f}")
 
-# Regime-conditional risk
-metrics = conditional_metrics(returns, model.regime_labels)
-var = regime_aware_var(returns, model.regime_labels, alpha=0.05)
+# Bayesian changepoint detection (no hmmlearn required)
+cps = detect_changepoints(returns, method="bayesian", penalty=50)
+for cp in cps:
+    print(f"  Changepoint at index {cp.index}, confidence={cp.confidence:.2f}, {cp.direction}")
 ```
 
-## Features
+[Detailed documentation: docs/regimes.md](docs/regimes.md)
 
-**Risk Metrics:** VaR (historical, parametric, and Cornish-Fisher), CVaR/Expected Shortfall, Sortino ratio, Calmar ratio, max drawdown with duration, Omega ratio, tail ratio, and return moments.
+### Portfolio Optimisation
 
-**Extreme Value Theory:** Generalised Pareto Distribution fitting, Generalised Extreme Value fitting, Hill tail index estimator, Peaks Over Threshold method, return level estimation, and comprehensive tail risk summaries.
+Six optimisation methods: Markowitz mean-variance, minimum variance, CVaR optimisation, risk parity, HRP, and maximum Sharpe. Plus Black-Litterman and Kelly criterion.
 
-**Fat-Tailed Distributions:** Student-t process, Levy alpha-stable process, Markov regime-switching GBM, and Kou's double-exponential jump diffusion.
+```python
+from quantlite.portfolio.optimisation import (
+    mean_variance_weights, mean_cvar_weights, risk_parity_weights,
+    hrp_weights, max_sharpe_weights, black_litterman, kelly_criterion,
+)
+import pandas as pd
+import numpy as np
 
-**Copulas and Dependency:** Gaussian, Student-t, Clayton, Gumbel, and Frank copulas with fitting, simulation, log-likelihood, and analytical tail dependence coefficients. Automatic model selection by AIC/BIC. Rolling, EWMA, and stress-conditional correlation. Rank correlation (Spearman, Kendall). Correlation breakdown testing.
+rng = np.random.default_rng(42)
+returns_df = pd.DataFrame({
+    "US_Equity": rng.normal(0.0004, 0.012, 504),
+    "Intl_Equity": rng.normal(0.0003, 0.014, 504),
+    "Govt_Bonds": rng.normal(0.00015, 0.004, 504),
+    "Corp_Bonds": rng.normal(0.0002, 0.006, 504),
+    "Gold": rng.normal(0.0001, 0.010, 504),
+})
 
-**Clustering and Allocation:** Hierarchical Risk Parity (Lopez de Prado) with correlation-distance clustering and recursive bisection. Quasi-diagonalisation for visual cluster analysis.
+# CVaR-optimised portfolio (minimises expected shortfall)
+cvar_port = mean_cvar_weights(returns_df, alpha=0.05)
+print(f"CVaR portfolio: return={cvar_port.expected_return:.2%}, risk={cvar_port.expected_risk:.4f}")
+for asset, w in cvar_port.weights.items():
+    print(f"  {asset}: {w:.2%}")
 
-**Portfolio Optimisation:** Mean-variance (Markowitz), minimum variance, mean-CVaR, risk parity (equal risk contribution), HRP, Black-Litterman with views, Kelly criterion (full and half), and maximum Sharpe tangency portfolio. All return a unified ``PortfolioWeights`` dataclass.
+# Risk parity
+rp = risk_parity_weights(returns_df)
+print(f"\nRisk parity Sharpe: {rp.sharpe:.2f}")
 
-**Rebalancing:** Calendar-based (daily, weekly, monthly, quarterly), threshold-triggered (drift-based), and tactical (regime-change-triggered) rebalancing strategies with full turnover tracking.
+# Kelly criterion for position sizing
+from quantlite.distributions.fat_tails import student_t_process
+strat_returns = student_t_process(nu=5, mu=0.001, sigma=0.02, n_steps=252, rng_seed=42)
+kelly_f = kelly_criterion(strat_returns)
+print(f"Full Kelly fraction: {kelly_f:.2f}")
+```
 
-**Backtesting:** Multi-asset production engine with fractional shares, configurable slippage models, transaction fees, risk limits with circuit breakers (max drawdown, daily loss limit, position size caps), regime-aware allocation, and comprehensive post-hoc analysis (monthly returns tables, rolling metrics, trade analysis, regime attribution).
+[Detailed documentation: docs/portfolio.md](docs/portfolio.md)
 
-**Regime Detection:** Gaussian Hidden Markov Models via hmmlearn with automatic regime count selection by BIC. CUSUM and Bayesian online change-point detection (Adams and MacKay, 2007). Regime-conditional risk metrics, transition risk analysis, and regime-aware VaR.
+### Rebalancing Strategies
 
-**Instruments:** Black-Scholes pricing and Greeks, bond pricing with duration and YTM, vectorised Monte Carlo for barrier and Asian options.
+Calendar-based, threshold-triggered, and regime-tactical rebalancing with full turnover tracking.
 
-**Data Generation:** GBM, correlated multi-asset GBM, Ornstein-Uhlenbeck, and Merton jump diffusion. All using NumPy's modern Generator API for thread-safe reproducibility.
+```python
+from quantlite.portfolio.rebalancing import (
+    rebalance_calendar, rebalance_threshold, rebalance_tactical,
+)
 
-**Visualisation:** Stephen Few-inspired theme with muted palette, direct labels, bullet graphs, sparklines, tail distribution plots, return level charts, drawdown charts, risk dashboards, copula contour plots, correlation heatmaps, stress correlation comparisons, regime timelines, regime distribution small multiples, transition matrices, and composite regime summaries.
+# Monthly calendar rebalance with equal weights
+def equal_weight(df):
+    n = df.shape[1]
+    return {col: 1.0 / n for col in df.columns}
 
-## Design Principles
+result = rebalance_calendar(returns_df, equal_weight, freq="monthly")
+print(f"Rebalances: {result.n_rebalances}, turnover: {result.turnover:.2f}")
 
-- **Fat tails by default.** Gaussian is available but never assumed. Every risk metric, every simulation, every test accounts for the reality that markets bite.
-- **Modern Python.** Type hints throughout, dataclass return types, NumPy Generator API, Python 3.10+.
-- **Vectorised.** Monte Carlo simulations use NumPy broadcasting, not Python loops.
-- **Honest charts.** Following Stephen Few: maximum data-ink ratio, no chartjunk, horizontal gridlines only, direct labels over legends.
+# Threshold rebalance (rebalance when any weight drifts >5% from target)
+result_thresh = rebalance_threshold(returns_df, equal_weight, threshold=0.05)
+print(f"Threshold rebalances: {result_thresh.n_rebalances}")
+```
+
+[Detailed documentation: docs/portfolio.md](docs/portfolio.md)
+
+### Backtesting Engine
+
+Multi-asset production backtesting with configurable slippage, transaction costs, risk limits, and circuit breakers.
+
+```python
+from quantlite.backtesting.engine import (
+    run_backtest, BacktestConfig, BacktestContext, RiskLimits, SlippageModel,
+)
+from quantlite.backtesting.analysis import performance_summary, trade_analysis
+from quantlite.backtesting.signals import momentum_signal, volatility_targeting
+from quantlite.data_generation import correlated_gbm
+import numpy as np
+import pandas as pd
+
+# Generate multi-asset price data
+cov = np.array([[0.04, 0.01, 0.005], [0.01, 0.03, 0.002], [0.005, 0.002, 0.01]])
+prices_df = correlated_gbm(
+    S0_list=[100, 50, 200], mu_list=[0.08, 0.06, 0.04],
+    cov_matrix=cov, steps=504, rng_seed=42, return_as="dataframe",
+)
+prices_df.index = pd.bdate_range("2022-01-03", periods=len(prices_df))
+prices_df.columns = ["Equities", "Bonds", "Commodities"]
+
+# Momentum-based allocation with risk limits
+def momentum_allocation(ctx: BacktestContext) -> dict[str, float]:
+    if len(ctx.historical_returns) < 60:
+        n = len(ctx.current_prices)
+        return {a: 1.0 / n for a in ctx.current_prices.index}
+    mom = momentum_signal(ctx.historical_returns.cumsum() + 100, lookback=60)
+    latest = mom.iloc[-1]
+    w = latest.clip(lower=0)
+    total = w.sum()
+    if total > 0:
+        w = w / total
+    return w.to_dict()
+
+config = BacktestConfig(
+    initial_capital=1_000_000,
+    slippage_model=SlippageModel(kind="fixed", spread_bps=5),
+    risk_limits=RiskLimits(max_drawdown=-0.15, max_position_pct=0.5),
+    rebalance_freq="weekly",
+    fee_per_trade_pct=0.001,
+)
+
+result = run_backtest(prices_df, momentum_allocation, config)
+print(performance_summary(result))
+```
+
+[Detailed documentation: docs/portfolio.md](docs/portfolio.md)
+
+### Data Generation
+
+Stochastic process simulators: Geometric Brownian Motion, correlated multi-asset GBM, Ornstein-Uhlenbeck mean-reversion, and Merton jump-diffusion.
+
+```python
+from quantlite.data_generation import (
+    geometric_brownian_motion, correlated_gbm,
+    ornstein_uhlenbeck, merton_jump_diffusion,
+)
+
+# Single asset with jumps
+prices = merton_jump_diffusion(
+    S0=100, mu=0.05, sigma=0.2, lamb=0.5,
+    jump_mean=-0.02, jump_std=0.08, steps=252, rng_seed=42,
+)
+
+# Mean-reverting interest rate process
+rates = ornstein_uhlenbeck(
+    x0=0.03, theta=0.5, mu=0.04, sigma=0.01, steps=252, rng_seed=42,
+)
+```
+
+### Instruments
+
+Black-Scholes option pricing with Greeks, bond pricing with duration and yield-to-maturity, and Monte Carlo pricing for exotic options (barrier, Asian).
+
+```python
+from quantlite.instruments.option_pricing import black_scholes_call, black_scholes_greeks
+from quantlite.instruments.bond_pricing import bond_price, bond_duration
+from quantlite.instruments.exotic_options import barrier_option_knock_out, asian_option_arithmetic
+
+# European call option
+call = black_scholes_call(S=100, K=105, T=0.5, r=0.05, sigma=0.2)
+greeks = black_scholes_greeks(S=100, K=105, T=0.5, r=0.05, sigma=0.2)
+print(f"Call price: {call:.2f}, Delta: {greeks.delta:.4f}, Gamma: {greeks.gamma:.4f}")
+
+# Coupon bond
+price = bond_price(face_value=1000, coupon_rate=0.05, market_rate=0.04, maturity=10)
+dur = bond_duration(face_value=1000, coupon_rate=0.05, market_rate=0.04, maturity=10)
+print(f"Bond price: {price:.2f}, Duration: {dur:.2f} years")
+
+# Down-and-out barrier option
+barrier_price = barrier_option_knock_out(S0=100, K=105, H=85, T=1, r=0.05, sigma=0.2, sims=50000)
+print(f"Barrier option: {barrier_price:.2f}")
+```
+
+### Visualisation
+
+Stephen Few-inspired charts with maximum data-ink ratio, muted palette, direct labels, and no chartjunk. Covers risk dashboards, copula contours, regime timelines, efficient frontiers, and correlation heatmaps.
+
+```python
+from quantlite.viz.theme import apply_few_theme, FEW_PALETTE, few_figure, bullet_graph
+from quantlite.viz.risk import plot_tail_distribution, plot_risk_dashboard, plot_drawdown
+from quantlite.viz.dependency import plot_copula_contour, plot_correlation_matrix
+from quantlite.viz.regimes import plot_regime_timeline, plot_regime_summary
+from quantlite.viz.portfolio import plot_efficient_frontier, plot_weights_over_time
+
+# Apply the Few theme globally
+apply_few_theme()
+
+# Single-page risk dashboard
+fig, axes = plot_risk_dashboard(returns)
+
+# Tail distribution with GPD overlay
+from quantlite.risk.evt import fit_gpd
+gpd = fit_gpd(returns)
+fig, ax = plot_tail_distribution(returns, gpd_fit=gpd)
+
+# Efficient frontier
+fig, ax = plot_efficient_frontier(returns_df)
+```
+
+[Detailed documentation: docs/visualisation.md](docs/visualisation.md)
+
+## Module Reference
+
+| Module | Description |
+|--------|-------------|
+| `quantlite.risk.metrics` | VaR, CVaR, Sortino, Calmar, Omega, tail ratio, drawdowns |
+| `quantlite.risk.evt` | GPD, GEV, Hill estimator, POT, return levels |
+| `quantlite.distributions.fat_tails` | Student-t, Levy stable, regime-switching GBM, Kou jump-diffusion |
+| `quantlite.dependency.copulas` | Gaussian, Student-t, Clayton, Gumbel, Frank copulas |
+| `quantlite.dependency.correlation` | Rolling, EWMA, stress, rank correlation |
+| `quantlite.dependency.clustering` | HRP (Hierarchical Risk Parity) |
+| `quantlite.regimes.hmm` | Hidden Markov Model regime detection |
+| `quantlite.regimes.changepoint` | CUSUM and Bayesian changepoint detection |
+| `quantlite.regimes.conditional` | Regime-conditional risk metrics and VaR |
+| `quantlite.portfolio.optimisation` | Mean-variance, CVaR, risk parity, HRP, Black-Litterman, Kelly |
+| `quantlite.portfolio.rebalancing` | Calendar, threshold, and tactical rebalancing |
+| `quantlite.backtesting.engine` | Multi-asset backtesting with circuit breakers |
+| `quantlite.backtesting.signals` | Momentum, mean reversion, trend following, vol targeting |
+| `quantlite.backtesting.analysis` | Performance summaries, monthly tables, regime attribution |
+| `quantlite.data_generation` | GBM, correlated GBM, OU, Merton jump-diffusion |
+| `quantlite.instruments` | Black-Scholes, bonds, barrier and Asian options |
+| `quantlite.viz` | Stephen Few-themed risk, dependency, regime, and portfolio charts |
+| `quantlite.metrics` | Basic annualised return, volatility, Sharpe, max drawdown |
+| `quantlite.monte_carlo` | Monte Carlo simulation harness |
+
+## Design Philosophy
+
+1. **Fat tails are the default.** Gaussian assumptions are explicitly opt-in, never implicit.
+2. **Typed return values.** Every function returns frozen dataclasses with clear attributes, not opaque dicts.
+3. **Composable modules.** Risk metrics feed into portfolio optimisation which feeds into backtesting. Each layer works independently.
+4. **Honest modelling.** If a method has known limitations (e.g., Gaussian copula has zero tail dependence), the docstring says so.
+5. **Reproducible.** Every stochastic function accepts `rng_seed` for deterministic output.
 
 ## Requirements
 
 - Python >= 3.10
-- NumPy, pandas, SciPy, matplotlib, mplfinance
+- numpy >= 1.24
+- pandas >= 2.0
+- scipy >= 1.10
+- matplotlib >= 3.7
+- mplfinance
 
-## Licence
+Optional: `hmmlearn` for HMM regime detection.
 
-MIT. See [LICENSE](LICENSE) for details.
+## Contributing
 
-## Author
+Contributions are welcome. Please ensure:
 
-Prasant Sudhakaran
+1. All new functions have type hints and docstrings
+2. Tests pass: `pytest`
+3. Code is formatted: `ruff check` and `ruff format`
+4. British spellings in all documentation
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
+
+## Links
+
+- [PyPI](https://pypi.org/project/quantlite/)
+- [GitHub](https://github.com/prasants/QuantLite)
+- [Issue Tracker](https://github.com/prasants/QuantLite/issues)

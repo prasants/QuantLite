@@ -6,11 +6,10 @@ in ``quantlite.backtesting.engine`` for new work.
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 import pandas as pd
-
-from ..core.types import BacktestResult
 
 __all__ = ["legacy_run_backtest"]
 

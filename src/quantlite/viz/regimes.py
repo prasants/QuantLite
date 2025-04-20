@@ -14,7 +14,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from .theme import FEW_PALETTE, apply_few_theme, direct_label
+from .theme import FEW_PALETTE, apply_few_theme
 
 __all__ = [
     "plot_regime_timeline",
@@ -191,7 +191,7 @@ def plot_transition_matrix(
         ["#FFFFFF", FEW_PALETTE["primary"]],
     )
 
-    im = ax.imshow(trans, cmap=cmap, vmin=0, vmax=1, aspect="auto")
+    ax.imshow(trans, cmap=cmap, vmin=0, vmax=1, aspect="auto")
 
     for i in range(n):
         for j in range(n):

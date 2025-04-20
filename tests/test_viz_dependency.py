@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from quantlite.dependency.copulas import GaussianCopula, ClaytonCopula
+from quantlite.dependency.copulas import ClaytonCopula
 from quantlite.viz.dependency import (
     plot_copula_contour,
     plot_correlation_dynamics,

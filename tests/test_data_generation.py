@@ -1,7 +1,6 @@
 """Tests for quantlite.data_generation."""
 
 import numpy as np
-import pytest
 
 from quantlite.data_generation import (
     correlated_gbm,

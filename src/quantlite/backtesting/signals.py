@@ -115,10 +115,7 @@ def volatility_targeting(
 
     scalar = target_vol / rolling_vol
     # Cap leverage at 3x to prevent extreme scaling
-    if isinstance(scalar, pd.DataFrame):
-        scalar = scalar.clip(upper=3.0)
-    else:
-        scalar = scalar.clip(upper=3.0)
+    scalar = scalar.clip(upper=3.0) if isinstance(scalar, pd.DataFrame) else scalar.clip(upper=3.0)
 
     return scalar
 

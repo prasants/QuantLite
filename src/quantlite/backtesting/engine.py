@@ -6,8 +6,10 @@ with circuit breakers, and regime-aware allocation functions.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Any, Callable
+import contextlib
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -228,25 +230,17 @@ def _compute_metrics(returns_arr: np.ndarray) -> dict[str, float]:
     except (ValueError, Exception):
         pass
 
-    try:
+    with contextlib.suppress(ValueError, Exception):
         metrics["sortino_ratio"] = sortino_ratio(returns_arr)
-    except (ValueError, Exception):
-        pass
 
-    try:
+    with contextlib.suppress(ValueError, Exception):
         metrics["calmar_ratio"] = calmar_ratio(returns_arr)
-    except (ValueError, Exception):
-        pass
 
-    try:
+    with contextlib.suppress(ValueError, Exception):
         metrics["omega_ratio"] = omega_ratio(returns_arr)
-    except (ValueError, Exception):
-        pass
 
-    try:
+    with contextlib.suppress(ValueError, Exception):
         metrics["tail_ratio"] = tail_ratio(returns_arr)
-    except (ValueError, Exception):
-        pass
 
     return metrics
 
@@ -364,7 +358,7 @@ def run_backtest(
             target_weights = _clip_weights(target_weights, config.risk_limits)
 
             # Execute trades
-            for j, name in enumerate(names):
+            for _j, name in enumerate(names):
                 old_w = current_weights.get(name, 0.0)
                 new_w = target_weights.get(name, 0.0)
                 delta = abs(new_w - old_w)

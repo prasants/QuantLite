@@ -11,7 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from ..risk.metrics import calmar_ratio, cvar, sortino_ratio, value_at_risk
+from ..risk.metrics import cvar, sortino_ratio, value_at_risk
 
 __all__ = [
     "conditional_metrics",
@@ -82,7 +82,6 @@ def regime_transition_risk(
     """
     trans = model.transition_matrix
     n = model.n_regimes
-    means = model.means
 
     # Regime 0 is crisis (lowest mean, sorted by fit_regime_model)
     crisis_regime = 0

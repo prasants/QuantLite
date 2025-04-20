@@ -79,7 +79,7 @@ class TestRiskLimits:
 
     def test_circuit_breaker_fires(self) -> None:
         """Inject a crash and verify the circuit breaker activates."""
-        rng = np.random.default_rng(42)
+        np.random.default_rng(42)
         n = 100
         dates = pd.bdate_range("2020-01-01", periods=n)
         # Normal prices then crash

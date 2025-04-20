@@ -2,13 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import matplotlib.pyplot as plt
 import mplfinance as mpf
 import numpy as np
 import pandas as pd
-from scipy.stats import norm
 
 __all__ = [
     "plot_time_series",

@@ -9,8 +9,8 @@ import pytest
 from quantlite.portfolio.rebalancing import (
     RebalanceResult,
     rebalance_calendar,
-    rebalance_threshold,
     rebalance_tactical,
+    rebalance_threshold,
 )
 
 

@@ -1,10 +1,10 @@
 """Tests for quantlite.visualisation (legacy charts)."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 import pandas as pd
-import pytest
 
 from quantlite.visualisation import (
     plot_equity_curve,

@@ -10,13 +10,13 @@ from quantlite.portfolio.optimisation import (
     PortfolioWeights,
     black_litterman,
     half_kelly,
+    hrp_weights,
     kelly_criterion,
     max_sharpe_weights,
     mean_cvar_weights,
     mean_variance_weights,
     min_variance_weights,
     risk_parity_weights,
-    hrp_weights,
 )
 
 

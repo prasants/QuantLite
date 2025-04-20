@@ -1,6 +1,5 @@
 """Tests for quantlite.instruments (options, bonds, exotics)."""
 
-import pytest
 
 from quantlite.instruments.bond_pricing import bond_duration, bond_price, bond_yield_to_maturity
 from quantlite.instruments.exotic_options import asian_option_arithmetic, barrier_option_knock_out

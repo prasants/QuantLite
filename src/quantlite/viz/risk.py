@@ -16,7 +16,7 @@ from scipy import stats
 
 from ..core.types import GPDFit
 from ..risk.metrics import cvar, max_drawdown_duration, return_moments, value_at_risk
-from .theme import FEW_PALETTE, apply_few_theme, bullet_graph, direct_label, few_figure, sparkline
+from .theme import FEW_PALETTE, apply_few_theme, direct_label
 
 __all__ = [
     "plot_tail_distribution",
@@ -127,7 +127,7 @@ def plot_return_levels(
     ax.plot(periods, levels, color=FEW_PALETTE["primary"], linewidth=2)
 
     # Approximate confidence band using delta method
-    xi, sigma = gpd_fit.shape, gpd_fit.scale
+    _xi, sigma = gpd_fit.shape, gpd_fit.scale
     se_factor = sigma / np.sqrt(gpd_fit.n_exceedances)
     upper = [lv + 1.96 * se_factor for lv in levels]
     lower = [lv - 1.96 * se_factor for lv in levels]

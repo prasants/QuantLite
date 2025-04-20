@@ -1,7 +1,6 @@
 """Tests for quantlite.backtesting.legacy (single-asset backtester)."""
 
 import pandas as pd
-import pytest
 
 from quantlite.backtesting.legacy import legacy_run_backtest
 

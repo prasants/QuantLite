@@ -7,8 +7,8 @@ rebalance dates, and turnover statistics.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
@@ -134,7 +134,6 @@ def rebalance_calendar(
     Returns:
         ``RebalanceResult`` with periodic rebalancing.
     """
-    dates = returns_df.index
 
     def _period_key(dt: object, f: str) -> object:
         if f == "daily":
@@ -193,9 +192,7 @@ def rebalance_threshold(
         if last_target is None:
             return True
         drift = np.max(np.abs(current_weights - last_target))
-        if drift > threshold:
-            return True
-        return False
+        return drift > threshold
 
     original_func = weights_func
 

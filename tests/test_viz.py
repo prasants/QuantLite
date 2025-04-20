@@ -1,6 +1,7 @@
 """Smoke tests for quantlite.viz (theme and risk charts)."""
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 import numpy as np

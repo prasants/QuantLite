@@ -14,10 +14,9 @@ import numpy as np
 import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from scipy import stats
 from scipy.stats import rankdata
 
-from .theme import FEW_PALETTE, apply_few_theme, direct_label, few_figure
+from .theme import FEW_PALETTE, apply_few_theme, direct_label
 
 __all__ = [
     "plot_copula_contour",
@@ -225,7 +224,7 @@ def plot_stress_correlation(
     n = len(calm_corr)
 
     for ax, corr, title in [(axes[0], calm_corr, "Calm"), (axes[1], stress_corr, "Stress")]:
-        im = ax.imshow(corr.values, cmap=cmap, vmin=-1, vmax=1, aspect="auto")
+        ax.imshow(corr.values, cmap=cmap, vmin=-1, vmax=1, aspect="auto")
         for i in range(n):
             for j in range(n):
                 val = corr.values[i, j]

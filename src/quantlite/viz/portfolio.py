@@ -17,7 +17,6 @@ from matplotlib.figure import Figure
 from .theme import (
     FEW_PALETTE,
     apply_few_theme,
-    bullet_graph,
     direct_label,
     few_figure,
 )
@@ -183,7 +182,7 @@ def plot_monthly_returns(result: Any) -> tuple[Figure, Axes]:
     cmap.set_bad(color=FEW_PALETTE["grey_light"])
 
     vmax = max(abs(np.nanmin(data)), abs(np.nanmax(data))) if not np.all(np.isnan(data)) else 0.1
-    im = ax.imshow(masked, cmap=cmap, aspect="auto", vmin=-vmax, vmax=vmax)
+    ax.imshow(masked, cmap=cmap, aspect="auto", vmin=-vmax, vmax=vmax)
 
     ax.set_xticks(range(12))
     ax.set_xticklabels(table.columns, fontsize=9)

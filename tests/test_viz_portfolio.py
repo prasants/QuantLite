@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 import numpy as np

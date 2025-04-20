@@ -1,5 +1,12 @@
 """Backtesting: multi-asset engine, signals, and post-hoc analysis."""
 
+from .analysis import (
+    monthly_returns_table,
+    performance_summary,
+    regime_attribution,
+    rolling_metrics,
+    trade_analysis,
+)
 from .engine import (
     BacktestConfig,
     BacktestContext,
@@ -14,13 +21,6 @@ from .signals import (
     regime_filter,
     trend_following,
     volatility_targeting,
-)
-from .analysis import (
-    monthly_returns_table,
-    performance_summary,
-    regime_attribution,
-    rolling_metrics,
-    trade_analysis,
 )
 
 __all__ = [

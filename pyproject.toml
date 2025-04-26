@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quantlite"
-version = "0.2.1"
+version = "0.2.2"
 description = "A fat-tail-native quantitative finance toolkit: EVT, risk metrics, and honest modelling for markets that bite."
 requires-python = ">=3.10"
 license = { file = "LICENSE" }

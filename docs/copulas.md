@@ -4,6 +4,36 @@
 
 Copulas separate the marginal behaviour of individual assets from their dependence structure. This is critical in risk management because linear correlation captures only one aspect of dependence and completely misses tail dependence, the tendency for assets to crash together.
 
+### Five Copula Families Compared
+
+All five copulas fitted to the same bivariate return data. Notice how Clayton captures lower-tail clustering (joint crashes), Gumbel captures upper-tail clustering, and the Student-t captures both:
+
+![Copula Contours](images/copula_contours.png)
+
+### Tail Dependence by Family
+
+A direct comparison of lower and upper tail dependence coefficients across copula families. Only Clayton, Student-t, and Gumbel exhibit non-zero tail dependence:
+
+![Tail Dependence](images/tail_dependence_comparison.png)
+
+### Simulated Dependency Structures
+
+Scatter plots from three copulas show how different families produce different joint extreme behaviour. Red points highlight joint crashes, green points highlight joint rallies:
+
+![Copula Scatter](images/copula_scatter.png)
+
+### Stress vs Calm Correlation
+
+Correlation matrices estimated separately during calm and stress periods. Notice how correlations spike during crises, reducing diversification when it is most needed:
+
+![Stress vs Calm](images/stress_vs_calm_correlation.png)
+
+### EWMA vs Rolling Correlation
+
+EWMA correlation reacts faster to regime changes than simple rolling windows, making it more useful for real-time risk monitoring:
+
+![EWMA Correlation](images/ewma_correlation.png)
+
 ### Available Copula Families
 
 | Copula | Parameters | Lower Tail Dep | Upper Tail Dep | Best For |

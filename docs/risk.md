@@ -4,6 +4,30 @@
 
 QuantLite's risk metrics module provides tail-aware measures that go beyond standard volatility. All functions accept NumPy arrays, pandas Series, or plain Python lists of simple returns.
 
+### VaR Comparison: Historical vs Parametric vs Cornish-Fisher
+
+The chart below shows how different VaR methods diverge on fat-tailed data. Cornish-Fisher adjusts for skewness and kurtosis, producing more conservative estimates than the parametric (Gaussian) method:
+
+![VaR/CVaR Comparison](images/var_cvar_comparison.png)
+
+### Return Distribution: Where Gaussian Fails
+
+The shaded regions show where the Gaussian distribution underestimates the probability of extreme losses. The Student-t fit (with low degrees of freedom) captures the true tail behaviour:
+
+![Return Distribution](images/return_distribution_fat_tails.png)
+
+### Drawdown Analysis
+
+Maximum drawdown with duration tracking. The underwater chart reveals the severity and persistence of losses:
+
+![Drawdown Chart](images/drawdown_chart.png)
+
+### Risk-Adjusted Return Metrics
+
+Bullet graphs comparing Sortino, Calmar, and Omega ratios against target benchmarks:
+
+![Risk Bullet Graphs](images/risk_bullet_graphs.png)
+
 ### Value at Risk
 
 Three VaR methods, each with different assumptions about the return distribution:
@@ -99,6 +123,30 @@ Excess kurtosis > 0 indicates fatter tails than the Gaussian distribution. Typic
 ## Extreme Value Theory (`quantlite.risk.evt`)
 
 EVT provides a mathematically rigorous framework for modelling the tails of distributions. While standard risk metrics extrapolate from the body of the distribution, EVT fits models directly to the tail, yielding more reliable estimates of extreme quantiles.
+
+### GPD Tail Fit
+
+The GPD fitted to tail exceedances closely tracks the empirical survival function, validating the power-law tail assumption:
+
+![GPD Tail Fit](images/gpd_tail_fit.png)
+
+### QQ Plots: Normal vs Student-t
+
+The normal QQ plot reveals systematic departure in the tails (the characteristic "S-bend"), whilst the Student-t fit tracks much more closely:
+
+![QQ Plots](images/qq_plots.png)
+
+### Return Level Plot
+
+Extrapolating the GPD to estimate losses at various return periods, with confidence bands:
+
+![Return Level Plot](images/return_level_plot.png)
+
+### Hill Plot
+
+The Hill estimator provides a non-parametric estimate of the tail index. The stable region (where the estimate plateaus) gives a robust estimate of the power-law exponent:
+
+![Hill Plot](images/hill_plot.png)
 
 ### Generalised Pareto Distribution
 

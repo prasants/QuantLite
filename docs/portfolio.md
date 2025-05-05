@@ -4,6 +4,40 @@
 
 All optimisation functions return a `PortfolioWeights` dataclass with `weights`, `method`, `expected_return`, `expected_risk`, and `sharpe` attributes.
 
+### Efficient Frontier
+
+Random portfolios coloured by Sharpe ratio, with minimum variance and maximum Sharpe portfolios highlighted. Individual assets are marked for reference:
+
+![Efficient Frontier](images/efficient_frontier.png)
+
+### HRP Dendrogram and Weights
+
+Hierarchical Risk Parity clusters assets by correlation distance, then allocates inversely proportional to cluster variance:
+
+![HRP Dendrogram](images/hrp_dendrogram.png)
+
+### Weight Comparison Across Methods
+
+Four optimisation methods produce notably different allocations. Risk parity and HRP tend to be more diversified than mean-variance:
+
+![Weight Comparison](images/weight_comparison.png)
+
+### Monthly Returns Heatmap
+
+A visual summary of portfolio performance by month and year, making it easy to spot seasonal patterns and drawdown clusters:
+
+![Monthly Returns](images/monthly_returns_heatmap.png)
+
+### Backtest Tearsheet
+
+Strategy vs benchmark equity curve, underwater chart, monthly returns, and rolling Sharpe ratio:
+
+![Equity Curve](images/equity_curve.png)
+
+![Backtest Drawdown](images/backtest_drawdown.png)
+
+![Rolling Sharpe](images/rolling_sharpe.png)
+
 ### Mean-Variance (Markowitz)
 
 ```python

@@ -19,6 +19,48 @@ Most quantitative finance libraries treat fat tails as an afterthought. QuantLit
 - **Stephen Few visualisations**: Publication-quality charts following Few's principles of maximum data-ink ratio
 - **Production backtesting**: Multi-asset engine with circuit breakers, slippage models, and regime-aware allocation
 
+## What QuantLite Looks Like
+
+Every chart follows Stephen Few's principles: maximum data-ink ratio, muted palette, direct labels, no chartjunk.
+
+### Fat Tails vs Gaussian
+
+Where the Gaussian distribution underestimates tail risk, QuantLite's EVT and Student-t fitting reveal the true shape:
+
+![Return Distribution](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/return_distribution_fat_tails.png)
+
+### Regime Detection
+
+Hidden Markov Models automatically identify bull, bear, and crisis regimes in price series:
+
+![Regime Timeline](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/regime_timeline.png)
+
+### Portfolio Construction
+
+Efficient frontier with individual assets, minimum variance, and maximum Sharpe portfolios:
+
+![Efficient Frontier](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/efficient_frontier.png)
+
+### Copula Dependency Structures
+
+Five copula families fitted to the same data, showing how each captures different tail behaviour:
+
+![Copula Contours](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/copula_contours.png)
+
+### Correlation Breakdown During Crisis
+
+Rolling correlation spikes during stress periods, revealing the well-documented diversification failure:
+
+![Rolling Correlation](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/rolling_correlation.png)
+
+### Backtest Tearsheet
+
+Strategy equity curve with benchmark comparison:
+
+![Equity Curve](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/equity_curve.png)
+
+> See the `examples/` directory for the scripts that generate all of these charts.
+
 ## Installation
 
 ```bash
@@ -88,6 +130,10 @@ dd = max_drawdown_duration(returns)
 print(f"Max drawdown: {dd.max_drawdown:.2%}, duration: {dd.duration} periods")
 ```
 
+![VaR/CVaR Comparison](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/var_cvar_comparison.png)
+
+![Drawdown Chart](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/drawdown_chart.png)
+
 [Detailed documentation: docs/risk.md](docs/risk.md)
 
 ### Extreme Value Theory
@@ -111,6 +157,10 @@ print(f"1-in-1000-day loss: {rl:.4f}")
 hill = hill_estimator(returns)
 print(f"Tail index (alpha): {hill.tail_index:.2f}")
 ```
+
+![GPD Tail Fit](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/gpd_tail_fit.png)
+
+![Return Level Plot](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/return_level_plot.png)
 
 [Detailed documentation: docs/evt.md](docs/evt.md)
 
@@ -175,6 +225,8 @@ print(f"Upper tail dependence: {td['upper']:.3f}")
 best = select_best_copula(data)
 print(f"Best copula: {best.name} (AIC={best.aic:.1f})")
 ```
+
+![Tail Dependence Comparison](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/tail_dependence_comparison.png)
 
 [Detailed documentation: docs/copulas.md](docs/copulas.md)
 
@@ -272,6 +324,10 @@ for cp in cps:
     print(f"  Changepoint at index {cp.index}, confidence={cp.confidence:.2f}, {cp.direction}")
 ```
 
+![Transition Matrix](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/transition_matrix.png)
+
+![Changepoint Detection](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/changepoint_detection.png)
+
 [Detailed documentation: docs/regimes.md](docs/regimes.md)
 
 ### Portfolio Optimisation
@@ -311,6 +367,10 @@ strat_returns = student_t_process(nu=5, mu=0.001, sigma=0.02, n_steps=252, rng_s
 kelly_f = kelly_criterion(strat_returns)
 print(f"Full Kelly fraction: {kelly_f:.2f}")
 ```
+
+![HRP Dendrogram](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/hrp_dendrogram.png)
+
+![Weight Comparison](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/weight_comparison.png)
 
 [Detailed documentation: docs/portfolio.md](docs/portfolio.md)
 

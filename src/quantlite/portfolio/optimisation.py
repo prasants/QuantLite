@@ -123,7 +123,7 @@ def mean_variance_weights(
     sharpe = (ann_ret - risk_free_rate) / ann_vol if ann_vol > 0 else float("nan")
 
     return PortfolioWeights(
-        weights=dict(zip(names, w.tolist())),
+        weights=dict(zip(names, w.tolist(), strict=True)),
         method="mean_variance",
         expected_return=ann_ret,
         expected_risk=ann_vol,
@@ -214,7 +214,7 @@ def mean_cvar_weights(
     sharpe = (ann_ret - risk_free_rate) / ann_vol if ann_vol > 0 else float("nan")
 
     return PortfolioWeights(
-        weights=dict(zip(names, w.tolist())),
+        weights=dict(zip(names, w.tolist(), strict=True)),
         method="mean_cvar",
         expected_return=ann_ret,
         expected_risk=cvar_val,
@@ -276,7 +276,7 @@ def risk_parity_weights(
     sharpe = (ann_ret - risk_free_rate) / ann_vol if ann_vol > 0 else float("nan")
 
     return PortfolioWeights(
-        weights=dict(zip(names, w.tolist())),
+        weights=dict(zip(names, w.tolist(), strict=True)),
         method="risk_parity",
         expected_return=ann_ret,
         expected_risk=ann_vol,
@@ -498,7 +498,7 @@ def max_sharpe_weights(
     sharpe = (ann_ret - risk_free_rate) / ann_vol if ann_vol > 0 else float("nan")
 
     return PortfolioWeights(
-        weights=dict(zip(names, w.tolist())),
+        weights=dict(zip(names, w.tolist(), strict=True)),
         method="max_sharpe",
         expected_return=ann_ret,
         expected_risk=ann_vol,

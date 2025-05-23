@@ -4,6 +4,13 @@
 
 **Design law:** Every visualisation, matplotlib or Plotly, follows Stephen Few's principles without exception. Maximum data-ink ratio, direct labels, muted palette, no chartjunk. This is not a feature; it is a constraint on everything we build.
 
+**Target users:**
+
+- **Quant researchers** doing their own strategy development. They get: data connectors, fat-tail-native analytics, honest backtesting, ergodicity tools. The stuff they would otherwise cobble together from six different libraries, none of which talk to each other.
+- **Institutional risk teams** looking for a drop-in toolkit. They get: regime-aware VaR/CVaR, contagion metrics (CoVaR, MES), stress testing, factor decomposition, auto-generated tearsheets. The stuff they currently pay Bloomberg or Axioma for, or build in-house and never maintain.
+
+The common thread is the philosophy: if your tools assume Gaussian, they are lying to you. The researcher cares because they want correct answers. The risk team cares because their regulator cares. The API is designed so a researcher can use individual functions in a notebook, and a risk team can use the higher-level pipeline as a drop-in workflow. Same library, different depth.
+
 ---
 
 ## v0.2 (current)
@@ -145,7 +152,16 @@ Most backtesting libraries help you fool yourself. We do the opposite. Every met
 
 The antidote to data mining.
 
-- **Probability of Backtest Overfitting (PBO):** CSCV method from Lopez de Prado
+- **Trial Tracker:** built-in logging of every backtest trial, not just the winner. CSCV is only honest if it knows about ALL trials. If you run a backtest outside the tracker, it warns you that your overfitting estimate is a lower bound.
+  ```python
+  with TrialTracker("momentum_strategy") as tracker:
+      for lookback in [20, 40, 60, 120, 252]:
+          for threshold in [0.5, 1.0, 1.5, 2.0]:
+              result = run_backtest(data, strategy(lookback, threshold))
+              tracker.log(params={...}, result=result)
+      tracker.overfitting_probability()  # knows about ALL 20 trials
+  ```
+- **Probability of Backtest Overfitting (PBO):** CSCV method from Lopez de Prado, integrated with Trial Tracker
 - **Multiple testing correction:** Bonferroni, Benjamini-Hochberg-Yekutieli
 - **Minimum Backtest Length:** required data to trust a given Sharpe at a given confidence
 - **Walk-forward validation:** built in, not optional. Rolling and expanding window.

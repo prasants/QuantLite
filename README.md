@@ -448,6 +448,54 @@ print(performance_summary(result))
 
 [Detailed documentation: docs/portfolio.md](docs/portfolio.md)
 
+### Data Connectors
+
+A unified `fetch()` function that pulls OHLCV data from Yahoo Finance, crypto exchanges (CCXT), FRED, or local files through a single interface.
+
+```python
+from quantlite.data import fetch
+
+# Equities from Yahoo Finance
+df = fetch("AAPL", period="5y")
+data = fetch(["AAPL", "MSFT", "GOOG"], period="5y")
+
+# Crypto from any CCXT-supported exchange
+df = fetch("BTC/USDT", source="ccxt", exchange="binance")
+
+# Macroeconomic data from FRED
+df = fetch("DGS10", source="fred")
+
+# Local CSV or Parquet files
+df = fetch("prices.csv", source="local")
+
+# Mix sources in one call
+data = fetch({"AAPL": "yahoo", "BTC/USDT": {"source": "ccxt", "exchange": "binance"}})
+```
+
+Install only the sources you need:
+
+```bash
+pip install quantlite[yahoo]    # Yahoo Finance
+pip install quantlite[crypto]   # Cryptocurrency exchanges
+pip install quantlite[fred]     # FRED macroeconomic data
+pip install quantlite[all]      # All data sources
+```
+
+Custom data sources can be registered via the plugin architecture:
+
+```python
+from quantlite.data import DataSource, register_source
+
+@register_source("my_api")
+class MySource(DataSource):
+    def fetch(self, symbol, **kwargs):
+        ...
+    def supported_symbols(self):
+        return None
+```
+
+[Detailed documentation: docs/data.md](docs/data.md)
+
 ### Data Generation
 
 Stochastic process simulators: Geometric Brownian Motion, correlated multi-asset GBM, Ornstein-Uhlenbeck mean-reversion, and Merton jump-diffusion.
@@ -526,6 +574,7 @@ fig, ax = plot_efficient_frontier(returns_df)
 
 | Module | Description |
 |--------|-------------|
+| `quantlite.data` | Unified data connectors: Yahoo Finance, CCXT, FRED, local files, plugin registry, caching |
 | `quantlite.risk.metrics` | VaR, CVaR, Sortino, Calmar, Omega, tail ratio, drawdowns |
 | `quantlite.risk.evt` | GPD, GEV, Hill estimator, POT, return levels |
 | `quantlite.distributions.fat_tails` | Student-t, Levy stable, regime-switching GBM, Kou jump-diffusion |
@@ -563,7 +612,7 @@ fig, ax = plot_efficient_frontier(returns_df)
 - matplotlib >= 3.7
 - mplfinance
 
-Optional: `hmmlearn` for HMM regime detection.
+Optional: `hmmlearn` for HMM regime detection. `yfinance` for Yahoo data. `ccxt` for crypto. `fredapi` for FRED.
 
 ## Contributing
 

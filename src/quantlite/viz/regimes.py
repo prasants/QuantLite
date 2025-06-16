@@ -38,7 +38,8 @@ def plot_regime_timeline(
     regimes: np.ndarray,
     changepoints: list[int] | None = None,
     figsize: tuple[float, float] = (12, 4.5),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot cumulative returns with a regime colour band below.
 
     The main chart shows cumulative returns. A thin horizontal band
@@ -54,6 +55,10 @@ def plot_regime_timeline(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.regimes import plot_regime_timeline as _plotly
+        return _plotly(returns, regimes, changepoints=changepoints)
+
     apply_few_theme()
     arr = np.asarray(returns, dtype=float)
     reg = np.asarray(regimes, dtype=int)
@@ -105,6 +110,7 @@ def plot_regime_distributions(
     regimes: np.ndarray,
     bins: int = 40,
     figsize: tuple[float, float] | None = None,
+    backend: str = "matplotlib",
 ) -> tuple[Figure, Any]:
     """Plot return distributions as small multiples, one per regime.
 
@@ -119,6 +125,10 @@ def plot_regime_distributions(
     Returns:
         Tuple of (Figure, array of Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.regimes import plot_regime_distributions as _plotly
+        return _plotly(returns, regimes, bins=bins)
+
     apply_few_theme()
     arr = np.asarray(returns, dtype=float)
     reg = np.asarray(regimes, dtype=int)
@@ -164,7 +174,8 @@ def plot_regime_distributions(
 def plot_transition_matrix(
     model: Any,
     figsize: tuple[float, float] = (5, 4),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot the regime transition probability matrix.
 
     Cell colour intensity proportional to probability. Values
@@ -178,6 +189,10 @@ def plot_transition_matrix(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.regimes import plot_transition_matrix as _plotly
+        return _plotly(model)
+
     apply_few_theme()
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 

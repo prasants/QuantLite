@@ -31,7 +31,8 @@ def plot_tail_distribution(
     gpd_fit: GPDFit | None = None,
     bins: int = 80,
     figsize: tuple[float, float] = (10, 5),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot return distribution with normal overlay and tail analysis.
 
     Shows a histogram of returns, a fitted normal curve (grey),
@@ -47,6 +48,10 @@ def plot_tail_distribution(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.risk import plot_return_distribution
+        return plot_return_distribution(returns, gpd_fit=gpd_fit, bins=bins)
+
     apply_few_theme()
     arr = np.asarray(returns, dtype=float)
     arr = arr[~np.isnan(arr)]
@@ -104,7 +109,8 @@ def plot_return_levels(
     max_period: int = 10000,
     n_points: int = 50,
     figsize: tuple[float, float] = (8, 5),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot return levels against return periods with confidence bands.
 
     Args:
@@ -116,6 +122,10 @@ def plot_return_levels(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.risk import plot_return_level
+        return plot_return_level(gpd_fit, max_period=max_period, n_points=n_points)
+
     from ..risk.evt import return_level as calc_return_level
 
     apply_few_theme()
@@ -153,7 +163,8 @@ def plot_return_levels(
 def plot_drawdown(
     returns: np.ndarray | Any,
     figsize: tuple[float, float] = (10, 4),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot an underwater (drawdown) chart with duration annotations.
 
     Args:
@@ -163,6 +174,10 @@ def plot_drawdown(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.risk import plot_drawdown as _plot_drawdown_plotly
+        return _plot_drawdown_plotly(returns)
+
     apply_few_theme()
     arr = np.asarray(returns, dtype=float)
     arr = arr[~np.isnan(arr)]

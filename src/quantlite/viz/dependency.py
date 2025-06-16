@@ -30,7 +30,8 @@ def plot_copula_contour(
     copula: Any,
     data: np.ndarray,
     figsize: tuple[float, float] = (8, 7),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot bivariate copula contour with marginal distributions.
 
     Shows contour lines (no fill) for the fitted copula in the
@@ -47,6 +48,10 @@ def plot_copula_contour(
     Returns:
         Tuple of (Figure, central Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.dependency import plot_copula_contour as _plotly
+        return _plotly(copula, data)
+
     apply_few_theme()
 
     fig = plt.figure(figsize=figsize)
@@ -145,7 +150,8 @@ def plot_copula_contour(
 def plot_correlation_matrix(
     corr_matrix: pd.DataFrame,
     figsize: tuple[float, float] | None = None,
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot a correlation heatmap with Few's diverging palette.
 
     Uses a muted blue-white-red diverging colourmap. Values annotated
@@ -159,6 +165,10 @@ def plot_correlation_matrix(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.dependency import plot_correlation_matrix as _plotly
+        return _plotly(corr_matrix)
+
     apply_few_theme()
     n = len(corr_matrix)
     if figsize is None:
@@ -198,6 +208,7 @@ def plot_stress_correlation(
     calm_corr: pd.DataFrame,
     stress_corr: pd.DataFrame,
     figsize: tuple[float, float] = (14, 5.5),
+    backend: str = "matplotlib",
 ) -> tuple[Figure, Any]:
     """Plot calm and stress correlation matrices side by side.
 
@@ -212,6 +223,10 @@ def plot_stress_correlation(
     Returns:
         Tuple of (Figure, array of Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.dependency import plot_stress_correlation as _plotly
+        return _plotly(calm_corr, stress_corr)
+
     apply_few_theme()
     fig, axes = plt.subplots(1, 2, figsize=figsize)
 
@@ -260,7 +275,8 @@ def plot_correlation_dynamics(
     y: np.ndarray | pd.Series,
     window: int = 60,
     figsize: tuple[float, float] = (10, 4),
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot rolling correlation over time.
 
     Shows the rolling Pearson correlation as a line chart with
@@ -275,6 +291,10 @@ def plot_correlation_dynamics(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.dependency import plot_correlation_dynamics as _plotly
+        return _plotly(x, y, window=window)
+
     apply_few_theme()
     fig, ax = plt.subplots(1, 1, figsize=figsize)
 

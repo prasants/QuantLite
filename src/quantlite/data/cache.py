@@ -12,6 +12,25 @@ import pandas as pd
 
 _DEFAULT_CACHE_DIR = Path.home() / ".quantlite" / "cache"
 
+
+def _has_parquet() -> bool:
+    """Check whether a parquet engine is available."""
+    try:
+        import pyarrow  # noqa: F401
+        return True
+    except ImportError:
+        pass
+    try:
+        import fastparquet  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def _cache_ext() -> str:
+    """Return the file extension for cached files."""
+    return ".parquet" if _has_parquet() else ".csv"
+
 # Default TTLs in seconds
 TTL_DAILY: int = 86_400  # 24 hours
 TTL_INTRADAY: int = 3_600  # 1 hour
@@ -60,9 +79,15 @@ def cache_get(
     """
     cache_dir = cache_dir or _DEFAULT_CACHE_DIR
     key = _cache_key(source, symbol, params)
-    path = cache_dir / f"{key}.parquet"
+    ext = _cache_ext()
+    path = cache_dir / f"{key}{ext}"
     if not path.exists():
-        return None
+        # Check for the other format (migration between parquet/csv)
+        alt_ext = ".csv" if ext == ".parquet" else ".parquet"
+        alt_path = cache_dir / f"{key}{alt_ext}"
+        if not alt_path.exists():
+            return None
+        path = alt_path
 
     if ttl is None:
         ttl = TTL_INTRADAY if _is_intraday(params) else TTL_DAILY
@@ -71,7 +96,9 @@ def cache_get(
     if age > ttl:
         return None
 
-    return pd.read_parquet(path)
+    if path.suffix == ".parquet":
+        return pd.read_parquet(path)
+    return pd.read_csv(path, index_col=0, parse_dates=True)
 
 
 def cache_put(
@@ -97,8 +124,12 @@ def cache_put(
     cache_dir = cache_dir or _DEFAULT_CACHE_DIR
     cache_dir.mkdir(parents=True, exist_ok=True)
     key = _cache_key(source, symbol, params)
-    path = cache_dir / f"{key}.parquet"
-    df.to_parquet(path)
+    ext = _cache_ext()
+    path = cache_dir / f"{key}{ext}"
+    if ext == ".parquet":
+        df.to_parquet(path)
+    else:
+        df.to_csv(path)
     return path
 
 
@@ -115,7 +146,7 @@ def clear_cache(*, cache_dir: Path | None = None) -> int:
     if not cache_dir.exists():
         return 0
     count = 0
-    for f in cache_dir.glob("*.parquet"):
+    for f in list(cache_dir.glob("*.parquet")) + list(cache_dir.glob("*.csv")):
         f.unlink()
         count += 1
     return count

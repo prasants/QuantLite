@@ -21,6 +21,15 @@ from quantlite.data import (
 from quantlite.data.base import DataMetadata, attach_metadata, standardise_dataframe
 from quantlite.data.cache import _cache_key, cache_get, cache_put, clear_cache
 
+
+def _has_pyarrow() -> bool:
+    try:
+        import pyarrow  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -189,6 +198,10 @@ class TestLocalSource:
         assert "close" in result.columns
         assert len(result) == len(df)
 
+    @pytest.mark.skipif(
+        not _has_pyarrow(),
+        reason="pyarrow not installed",
+    )
     def test_parquet_loading(self, tmp_path: Path) -> None:
         df = _make_ohlcv()
         pq_path = tmp_path / "test.parquet"

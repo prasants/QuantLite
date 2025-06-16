@@ -50,7 +50,8 @@ def plot_efficient_frontier(
     n_portfolios: int = 2000,
     risk_free_rate: float = 0.0,
     freq: int = 252,
-) -> tuple[Figure, Axes]:
+    backend: str = "matplotlib",
+) -> tuple[Figure, Axes] | Any:
     """Plot the efficient frontier with random portfolios.
 
     Scatter of random portfolios in grey, efficient frontier line in
@@ -66,6 +67,11 @@ def plot_efficient_frontier(
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from .plotly_backend.portfolio import plot_efficient_frontier as _plotly
+        return _plotly(returns_df, n_portfolios=n_portfolios,
+                       risk_free_rate=risk_free_rate, freq=freq)
+
     from ..portfolio.optimisation import max_sharpe_weights, min_variance_weights
 
     apply_few_theme()
@@ -151,7 +157,7 @@ def plot_weights_over_time(result: Any) -> tuple[Figure, Axes]:
     return fig, ax
 
 
-def plot_monthly_returns(result: Any) -> tuple[Figure, Axes]:
+def plot_monthly_returns(result: Any, backend: str = "matplotlib") -> tuple[Figure, Axes] | Any:
     """Heatmap of monthly returns.
 
     Diverging blue-white-red colourmap. Values displayed in cells.
@@ -163,6 +169,12 @@ def plot_monthly_returns(result: Any) -> tuple[Figure, Axes]:
     Returns:
         Tuple of (Figure, Axes).
     """
+    if backend == "plotly":
+        from ..backtesting.analysis import monthly_returns_table
+        from .plotly_backend.portfolio import plot_monthly_returns as _plotly
+        table = monthly_returns_table(result)
+        return _plotly(table)
+
     from ..backtesting.analysis import monthly_returns_table
 
     apply_few_theme()

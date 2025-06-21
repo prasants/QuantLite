@@ -8,19 +8,20 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import pytest
 
-from quantlite.viz.plotly_backend import (
+go = pytest.importorskip("plotly.graph_objects", reason="plotly not installed")
+
+from quantlite.viz.plotly_backend import (  # noqa: E402
     FEW_PALETTE,
     FEW_TEMPLATE,
     apply_few_theme_plotly,
     few_figure,
 )
-from quantlite.viz.plotly_backend import dependency as plotly_dep
-from quantlite.viz.plotly_backend import portfolio as plotly_port
-from quantlite.viz.plotly_backend import regimes as plotly_reg
-from quantlite.viz.plotly_backend import risk as plotly_risk
+from quantlite.viz.plotly_backend import dependency as plotly_dep  # noqa: E402
+from quantlite.viz.plotly_backend import portfolio as plotly_port  # noqa: E402
+from quantlite.viz.plotly_backend import regimes as plotly_reg  # noqa: E402
+from quantlite.viz.plotly_backend import risk as plotly_risk  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Fixtures

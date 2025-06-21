@@ -570,6 +570,24 @@ fig, ax = plot_efficient_frontier(returns_df)
 
 [Detailed documentation: docs/visualisation.md](docs/visualisation.md)
 
+### Interactive Visualisation (Plotly)
+
+Every matplotlib chart has an interactive Plotly equivalent. Install with `pip install quantlite[plotly]`.
+
+```python
+# Option 1: Import directly from the Plotly backend
+from quantlite.viz.plotly_backend.risk import plot_var_comparison
+fig = plot_var_comparison(returns)
+fig.show()
+
+# Option 2: Use the backend parameter on existing functions
+from quantlite.viz.risk import plot_drawdown
+fig = plot_drawdown(returns, backend="plotly")
+fig.show()
+```
+
+Same Stephen Few theme, same muted palette, but with hover info, zoom, and native Jupyter rendering. See [docs/interactive_viz.md](docs/interactive_viz.md) for the full chart reference.
+
 ## Module Reference
 
 | Module | Description |

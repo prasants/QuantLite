@@ -82,6 +82,22 @@ fig, ax = plot_tail_distribution(returns, gpd_fit=gpd)
 
 The grey dashed line shows the Gaussian fit; the blue line shows the GPD tail fit. The gap between them illustrates why Gaussian VaR underestimates tail risk.
 
+![Fat Tails vs Normal](images/return_distribution_fat_tails.png)
+
+![GPD Tail Fit](images/gpd_tail_fit.png)
+
+### VaR/CVaR Comparison
+
+Historical, parametric, and Cornish-Fisher VaR side by side:
+
+![VaR/CVaR Comparison](images/var_cvar_comparison.png)
+
+### QQ Plots
+
+Quantile-quantile plots reveal departure from normality in the tails:
+
+![QQ Plots](images/qq_plots.png)
+
 ### Return Level Plot
 
 Return levels against return periods on a log scale, with confidence bands:
@@ -92,6 +108,20 @@ from quantlite.viz.risk import plot_return_levels
 fig, ax = plot_return_levels(gpd, max_period=10000)
 ```
 
+![Return Level Plot](images/return_level_plot.png)
+
+### Hill Plot
+
+The Hill estimator tracks how the tail index varies with the number of order statistics used:
+
+![Hill Plot](images/hill_plot.png)
+
+### Risk Bullet Graphs
+
+Sortino, Calmar, and Omega ratios as bullet graphs (Stephen Few's preferred format for showing a value against qualitative ranges):
+
+![Risk Bullet Graphs](images/risk_bullet_graphs.png)
+
 ### Drawdown Chart
 
 Underwater chart with maximum drawdown annotation:
@@ -101,6 +131,8 @@ from quantlite.viz.risk import plot_drawdown
 
 fig, ax = plot_drawdown(returns)
 ```
+
+![Drawdown Chart](images/drawdown_chart.png)
 
 ### Risk Dashboard
 
@@ -133,6 +165,16 @@ fig, ax = plot_copula_contour(cop, data)
 
 The fitted copula contours appear in blue, with the Gaussian copula in grey for comparison. Tail dependence coefficients are annotated directly on the chart.
 
+![Copula Contours](images/copula_contours.png)
+
+![Copula Scatter](images/copula_scatter.png)
+
+### Tail Dependence Comparison
+
+How different copula families capture tail behaviour:
+
+![Tail Dependence](images/tail_dependence_comparison.png)
+
 ### Correlation Matrix
 
 Heatmap with cell annotations and a muted diverging colourmap:
@@ -158,6 +200,8 @@ stress_corr_mat = stress_correlation(returns_df, threshold_percentile=10)
 fig, axes = plot_stress_correlation(calm_corr, stress_corr_mat)
 ```
 
+![Stress vs Calm Correlation](images/stress_vs_calm_correlation.png)
+
 ### Rolling Correlation
 
 Time series of rolling correlation with overall correlation reference line:
@@ -169,6 +213,10 @@ fig, ax = plot_correlation_dynamics(
     returns_df["US_Equity"], returns_df["Govt_Bonds"], window=60,
 )
 ```
+
+![Rolling Correlation](images/rolling_correlation.png)
+
+![EWMA Correlation](images/ewma_correlation.png)
 
 ## Regime Charts (`quantlite.viz.regimes`)
 
@@ -184,6 +232,8 @@ model = fit_regime_model(returns, n_regimes=2, rng_seed=42)
 fig, ax = plot_regime_timeline(returns, model.regime_labels)
 ```
 
+![Regime Timeline](images/regime_timeline.png)
+
 ### Regime Distributions
 
 Small multiples of return distributions, one per regime, sharing the same x-axis:
@@ -194,6 +244,8 @@ from quantlite.viz.regimes import plot_regime_distributions
 fig, axes = plot_regime_distributions(returns, model.regime_labels)
 ```
 
+![Regime Distributions](images/regime_distributions.png)
+
 ### Transition Matrix
 
 Annotated heatmap of regime transition probabilities:
@@ -203,6 +255,14 @@ from quantlite.viz.regimes import plot_transition_matrix
 
 fig, ax = plot_transition_matrix(model)
 ```
+
+![Transition Matrix](images/transition_matrix.png)
+
+### Changepoint Detection
+
+Bayesian changepoint detection with detected structural breaks:
+
+![Changepoint Detection](images/changepoint_detection.png)
 
 ### Regime Summary
 
@@ -226,6 +286,20 @@ from quantlite.viz.portfolio import plot_efficient_frontier
 fig, ax = plot_efficient_frontier(returns_df, n_portfolios=3000)
 ```
 
+![Efficient Frontier](images/efficient_frontier.png)
+
+### HRP Dendrogram
+
+Hierarchical Risk Parity clusters assets by correlation distance:
+
+![HRP Dendrogram](images/hrp_dendrogram.png)
+
+### Weight Comparison
+
+Four optimisation methods produce notably different allocations:
+
+![Weight Comparison](images/weight_comparison.png)
+
 ### Weight Evolution
 
 Stacked area chart of portfolio weights over time:
@@ -246,6 +320,18 @@ Year-by-month returns table as a colour-coded heatmap:
 from quantlite.viz.portfolio import plot_monthly_returns
 # Requires a BacktestResult from the backtesting engine
 ```
+
+![Monthly Returns Heatmap](images/monthly_returns_heatmap.png)
+
+### Backtest Tearsheet
+
+Strategy equity curve, drawdown, and rolling Sharpe:
+
+![Equity Curve](images/equity_curve.png)
+
+![Backtest Drawdown](images/backtest_drawdown.png)
+
+![Rolling Sharpe](images/rolling_sharpe.png)
 
 ### Backtest Summary Dashboard
 

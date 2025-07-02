@@ -398,6 +398,20 @@ print(f"Threshold rebalances: {result_thresh.n_rebalances}")
 
 [Detailed documentation: docs/portfolio.md](docs/portfolio.md)
 
+### Reports
+
+Generate professional tearsheet reports from backtest results with one line:
+
+```python
+from quantlite.report import tearsheet
+
+tearsheet(result, save="portfolio_report.html")
+```
+
+Includes executive summary, risk metrics, drawdown analysis, monthly returns heatmap, rolling statistics, and regime analysis. Outputs HTML with interactive charts or PDF for print.
+
+[Detailed documentation: docs/reports.md](docs/reports.md)
+
 ### Backtesting Engine
 
 Multi-asset production backtesting with configurable slippage, transaction costs, risk limits, and circuit breakers.

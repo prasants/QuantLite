@@ -50,7 +50,9 @@ yahoo = ["yfinance>=0.2"]
 crypto = ["ccxt>=4.0"]
 fred = ["fredapi>=0.5"]
 plotly = ["plotly>=5.0", "kaleido>=0.2"]
-all = ["yfinance>=0.2", "ccxt>=4.0", "fredapi>=0.5", "plotly>=5.0", "kaleido>=0.2"]
+report = ["plotly>=5.0", "kaleido>=0.2"]
+pdf = ["weasyprint>=60"]
+all = ["yfinance>=0.2", "ccxt>=4.0", "fredapi>=0.5", "plotly>=5.0", "kaleido>=0.2", "weasyprint>=60"]
 dev = [
     "pytest>=7.0",
     "ruff>=0.4",

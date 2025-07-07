@@ -2,7 +2,17 @@
 
 Interactive equivalents of all matplotlib charts, following Stephen Few's
 design principles: maximum data-ink ratio, muted palette, no chartjunk.
+
+Requires ``plotly`` to be installed: ``pip install quantlite[plotly]``
 """
+
+try:
+    import plotly  # noqa: F401
+except ImportError as e:
+    raise ImportError(
+        "The plotly backend requires plotly to be installed. "
+        "Install it with: pip install quantlite[plotly]"
+    ) from e
 
 from .dependency import (
     plot_copula_contour,

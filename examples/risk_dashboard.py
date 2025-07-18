@@ -9,6 +9,7 @@ import os
 import sys
 
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -17,12 +18,16 @@ from scipy import stats
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE, bullet_graph
-from quantlite.risk.metrics import (
-    value_at_risk, cvar, sortino_ratio, calmar_ratio, omega_ratio,
-    max_drawdown_duration, return_moments,
-)
 from quantlite.data_generation import merton_jump_diffusion
+from quantlite.risk.metrics import (
+    calmar_ratio,
+    cvar,
+    max_drawdown_duration,
+    omega_ratio,
+    sortino_ratio,
+    value_at_risk,
+)
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme, bullet_graph
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -52,7 +57,7 @@ returns = np.diff(prices) / prices[:-1]
 # 1. VaR/CVaR fan chart: historical vs parametric vs Cornish-Fisher
 # ============================================================
 apply_few_theme()
-fig, ax = plt.subplots(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(10, 5.5))
 
 alphas = [0.10, 0.05, 0.025, 0.01]
 methods = ["historical", "parametric", "cornish-fisher"]
@@ -62,27 +67,34 @@ labels = ["Historical", "Parametric (Gaussian)", "Cornish-Fisher"]
 x = np.arange(len(alphas))
 width = 0.22
 
-for i, (method, colour, label) in enumerate(zip(methods, colours, labels)):
+for i, (method, colour, label) in enumerate(zip(methods, colours, labels, strict=False)):
     vars_ = [value_at_risk(returns, alpha=a, method=method) for a in alphas]
-    cvars_ = [cvar(returns, alpha=a) for a in alphas]
     bars = ax.bar(x + i * width, [-v for v in vars_], width * 0.9, color=colour, alpha=0.8, label=f"{label} VaR")
     # CVaR markers
-    ax.scatter(x + i * width, [-cvar(returns, alpha=a) for a in alphas],
-               color=colour, marker="_", s=200, linewidths=2.5, zorder=5)
+    cvar_vals = [-cvar(returns, alpha=a) for a in alphas]
+    ax.scatter(x + i * width, cvar_vals,
+               color=colour, marker="_", s=200, linewidths=2.5, zorder=5,
+               label=f"{label} CVaR" if i == 0 else None)
 
 ax.set_xticks(x + width)
 ax.set_xticklabels([f"{int(a*100)}%" for a in alphas])
 ax.set_xlabel("Significance level")
 ax.set_ylabel("Loss magnitude")
-ax.set_title("VaR Comparison: Historical vs Parametric vs Cornish-Fisher")
-ax.legend(fontsize=9, loc="upper left")
+ax.set_title("VaR Comparison: Historical vs Parametric vs Cornish-Fisher\n",
+             fontsize=13)
+ax.text(0.5, 1.01, "Bars = VaR    Horizontal marks = CVaR (Expected Shortfall)",
+        transform=ax.transAxes, fontsize=9, ha="center", va="bottom",
+        color=FEW_PALETTE["grey_mid"], fontstyle="italic")
 
-# Add CVaR annotation
-ax.text(0.98, 0.95, "Horizontal marks = CVaR", transform=ax.transAxes,
-        fontsize=8, ha="right", va="top", color=FEW_PALETTE["grey_mid"])
+# Legend outside the chart area, below the subtitle
+ax.legend(fontsize=8.5, loc="upper left", frameon=False, ncol=1)
+
+# Add breathing room on the right
+ax.set_xlim(-0.3, len(alphas) - 0.3 + width * 3)
+ax.margins(y=0.1)
 
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "var_cvar_comparison.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "var_cvar_comparison.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved var_cvar_comparison.png")
 
@@ -125,7 +137,7 @@ ax.set_ylabel("Density")
 ax.set_title("Return Distribution: Fat Tails vs Gaussian")
 ax.legend(fontsize=9)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "return_distribution_fat_tails.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "return_distribution_fat_tails.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved return_distribution_fat_tails.png")
 
@@ -156,7 +168,7 @@ ax.set_ylabel("Drawdown")
 ax.set_title("Underwater Chart")
 ax.set_xlim(0, len(drawdowns) - 1)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "drawdown_chart.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "drawdown_chart.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved drawdown_chart.png")
 
@@ -175,7 +187,7 @@ metrics = [
     ("Omega", omega, 1.5, [1.0, 2.0, 3.0]),
 ]
 
-for ax, (name, val, target, ranges) in zip(axes, metrics):
+for ax, (name, val, target, ranges) in zip(axes, metrics, strict=False):
     bullet_graph(ax, min(val, max(ranges)), target, ranges, label=name,
                  colour=FEW_PALETTE["primary"])
     ax.text(min(val, max(ranges) * 0.95), 0.35, f"{val:.2f}", fontsize=9,
@@ -184,7 +196,7 @@ for ax, (name, val, target, ranges) in zip(axes, metrics):
 fig.suptitle("Risk-Adjusted Return Metrics", fontsize=12, y=1.02,
              color=FEW_PALETTE["grey_dark"])
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "risk_bullet_graphs.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "risk_bullet_graphs.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved risk_bullet_graphs.png")
 

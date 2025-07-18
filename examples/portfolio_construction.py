@@ -5,8 +5,11 @@ Generates four charts saved to docs/images/.
 """
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
+
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -16,13 +19,16 @@ from scipy.cluster.hierarchy import dendrogram
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE
 from quantlite.data_generation import correlated_gbm
-from quantlite.portfolio.optimisation import (
-    mean_variance_weights, min_variance_weights, max_sharpe_weights,
-    risk_parity_weights, hrp_weights,
-)
 from quantlite.dependency.clustering import hierarchical_cluster
+from quantlite.portfolio.optimisation import (
+    hrp_weights,
+    max_sharpe_weights,
+    mean_variance_weights,
+    min_variance_weights,
+    risk_parity_weights,
+)
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -90,7 +96,7 @@ for _ in range(3000):
     rand_vols.append(vol)
 
 # Colour by Sharpe
-sharpes = [(r / v if v > 0 else 0) for r, v in zip(rand_rets, rand_vols)]
+sharpes = [(r / v if v > 0 else 0) for r, v in zip(rand_rets, rand_vols, strict=False)]
 sc = ax.scatter(rand_vols, rand_rets, c=sharpes, cmap="Blues", s=6, alpha=0.5, edgecolors="none")
 
 # Individual assets
@@ -119,7 +125,7 @@ ax.set_xlabel("Annualised volatility")
 ax.set_ylabel("Annualised return")
 ax.set_title("Efficient Frontier with Individual Assets")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "efficient_frontier.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "efficient_frontier.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved efficient_frontier.png")
 
@@ -151,7 +157,7 @@ for i, w in enumerate(weights_sorted):
     axes[1].text(w + 0.005, i, f"{w:.1%}", va="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
 
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "hrp_dendrogram.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "hrp_dendrogram.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved hrp_dendrogram.png")
 
@@ -186,7 +192,7 @@ ax.set_ylabel("Weight")
 ax.set_title("Portfolio Weight Comparison Across Methods")
 ax.legend(fontsize=9)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "weight_comparison.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "weight_comparison.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved weight_comparison.png")
 
@@ -228,7 +234,7 @@ ax.set_yticks(range(len(pivot)))
 ax.set_yticklabels(pivot.index, fontsize=9)
 ax.set_title("Monthly Returns Heatmap (Equal-Weight Portfolio)")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "monthly_returns_heatmap.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "monthly_returns_heatmap.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved monthly_returns_heatmap.png")
 

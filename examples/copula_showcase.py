@@ -5,8 +5,11 @@ Generates three charts saved to docs/images/.
 """
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
+
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -15,11 +18,15 @@ from scipy.stats import gaussian_kde, rankdata
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE
-from quantlite.dependency.copulas import (
-    GaussianCopula, StudentTCopula, ClaytonCopula, GumbelCopula, FrankCopula,
-)
 from quantlite.data_generation import merton_jump_diffusion
+from quantlite.dependency.copulas import (
+    ClaytonCopula,
+    FrankCopula,
+    GaussianCopula,
+    GumbelCopula,
+    StudentTCopula,
+)
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -60,7 +67,7 @@ u_data = np.column_stack([rankdata(data[:, j], method="ordinal") / (n + 1) for j
 grid = np.linspace(0.01, 0.99, 40)
 X, Y = np.meshgrid(grid, grid)
 
-for ax, (name, cop) in zip(axes, copulas):
+for ax, (name, cop) in zip(axes, copulas, strict=False):
     cop.fit(data)
     samples = cop.simulate(5000, rng_seed=42)
 
@@ -91,7 +98,7 @@ for ax in axes:
 fig.suptitle("Copula Contours: Five Families Fitted to the Same Data", fontsize=12,
              color=FEW_PALETTE["grey_dark"])
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "copula_contours.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "copula_contours.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved copula_contours.png")
 
@@ -121,14 +128,14 @@ ax.set_ylabel("Tail dependence coefficient")
 ax.set_title("Tail Dependence by Copula Family")
 ax.legend(fontsize=9)
 
-for i, (l, u) in enumerate(zip(lower_tds, upper_tds)):
-    if l > 0.01:
-        ax.text(i - w/2, l + 0.01, f"{l:.2f}", ha="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
-    if u > 0.01:
-        ax.text(i + w/2, u + 0.01, f"{u:.2f}", ha="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
+for i, (ltd, utd) in enumerate(zip(lower_tds, upper_tds, strict=False)):
+    if ltd > 0.01:
+        ax.text(i - w/2, ltd + 0.01, f"{ltd:.2f}", ha="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
+    if utd > 0.01:
+        ax.text(i + w/2, utd + 0.01, f"{utd:.2f}", ha="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
 
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "tail_dependence_comparison.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "tail_dependence_comparison.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved tail_dependence_comparison.png")
 
@@ -144,7 +151,7 @@ showcase = [
     ("Gumbel", GumbelCopula()),
 ]
 
-for ax, (name, cop) in zip(axes, showcase):
+for ax, (name, cop) in zip(axes, showcase, strict=False):
     cop.fit(data)
     samples = cop.simulate(2000, rng_seed=42)
     ax.scatter(samples[:, 0], samples[:, 1], s=4, alpha=0.3, color=FEW_PALETTE["primary"])
@@ -168,7 +175,7 @@ axes[1].legend(fontsize=8, loc="upper left")
 fig.suptitle("Dependency Structures: How Different Copulas Capture Tail Risk",
              fontsize=12, color=FEW_PALETTE["grey_dark"])
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "copula_scatter.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "copula_scatter.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved copula_scatter.png")
 

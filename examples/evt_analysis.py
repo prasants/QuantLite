@@ -5,8 +5,11 @@ Generates four charts saved to docs/images/.
 """
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
+
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -15,9 +18,9 @@ from scipy import stats
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE
-from quantlite.risk.evt import fit_gpd, hill_estimator, return_level
 from quantlite.data_generation import merton_jump_diffusion
+from quantlite.risk.evt import fit_gpd, hill_estimator, return_level
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -64,7 +67,7 @@ ax.set_ylabel("Survival probability")
 ax.set_title(f"GPD Tail Fit (threshold = {threshold:.4f})")
 ax.legend(fontsize=9)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "gpd_tail_fit.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "gpd_tail_fit.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved gpd_tail_fit.png")
 
@@ -97,7 +100,7 @@ ax.set_ylabel("Sample quantiles")
 ax.set_title("QQ Plot vs Student-t")
 
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "qq_plots.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "qq_plots.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved qq_plots.png")
 
@@ -130,7 +133,7 @@ ax.set_xlabel("Return period (trading days)")
 ax.set_ylabel("Estimated loss")
 ax.set_title("Return Level Plot")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "return_level_plot.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "return_level_plot.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved return_level_plot.png")
 
@@ -164,7 +167,7 @@ ax.set_xlabel("k (number of order statistics)")
 ax.set_ylabel("Tail index (alpha)")
 ax.set_title("Hill Plot: Tail Index Estimation")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "hill_plot.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "hill_plot.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved hill_plot.png")
 

@@ -5,8 +5,11 @@ Generates four charts saved to docs/images/.
 """
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
+
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -14,10 +17,10 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE
-from quantlite.regimes.hmm import fit_regime_model
+from quantlite.data_generation import geometric_brownian_motion, merton_jump_diffusion
 from quantlite.regimes.changepoint import detect_changepoints
-from quantlite.data_generation import merton_jump_diffusion, geometric_brownian_motion
+from quantlite.regimes.hmm import fit_regime_model
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -71,14 +74,14 @@ ax.set_xlabel("Trading day")
 ax.set_ylabel("Price")
 ax.set_title("HMM Regime Detection: Bull, Transition, and Crisis Regimes")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "regime_timeline.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "regime_timeline.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved regime_timeline.png")
 
 # ============================================================
 # 2. Transition matrix heatmap
 # ============================================================
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import LinearSegmentedColormap  # noqa: E402
 
 fig, ax = plt.subplots(figsize=(5, 4))
 
@@ -103,7 +106,7 @@ ax.set_xlabel("To regime")
 ax.set_ylabel("From regime")
 ax.set_title("Regime Transition Probabilities")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "transition_matrix.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "transition_matrix.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved transition_matrix.png")
 
@@ -127,7 +130,7 @@ ax.set_ylabel("Density")
 ax.set_title("Return Distributions by Regime")
 ax.legend(fontsize=9)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "regime_distributions.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "regime_distributions.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved regime_distributions.png")
 
@@ -161,7 +164,7 @@ for cp in cps[:8]:  # show top 8
                       ha="left", va="bottom")
 
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "changepoint_detection.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "changepoint_detection.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved changepoint_detection.png")
 

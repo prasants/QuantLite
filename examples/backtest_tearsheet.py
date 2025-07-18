@@ -5,8 +5,11 @@ Generates four charts saved to docs/images/.
 """
 from __future__ import annotations
 
-import os, sys
+import os
+import sys
+
 import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
@@ -15,9 +18,9 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.viz.theme import apply_few_theme, FEW_PALETTE
+from quantlite.data_generation import geometric_brownian_motion, merton_jump_diffusion
 from quantlite.risk.metrics import max_drawdown_duration
-from quantlite.data_generation import merton_jump_diffusion, geometric_brownian_motion
+from quantlite.viz.theme import FEW_PALETTE, apply_few_theme
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
 os.makedirs(OUT, exist_ok=True)
@@ -65,7 +68,7 @@ ax.set_ylabel("Portfolio value")
 ax.set_title("Strategy vs Benchmark")
 ax.legend(fontsize=9)
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "equity_curve.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "equity_curve.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved equity_curve.png")
 
@@ -91,7 +94,7 @@ ax.annotate(f"Max DD: {dd_info.max_drawdown:.1%}",
 ax.set_ylabel("Drawdown")
 ax.set_title("Underwater Chart")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "backtest_drawdown.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "backtest_drawdown.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved backtest_drawdown.png")
 
@@ -125,7 +128,7 @@ ax.set_yticks(range(len(pivot)))
 ax.set_yticklabels(pivot.index, fontsize=9)
 ax.set_title("Monthly Returns")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "backtest_monthly_returns.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "backtest_monthly_returns.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved backtest_monthly_returns.png")
 
@@ -153,7 +156,7 @@ ax.text(dates[5], overall_sharpe + 0.1, f"Overall: {overall_sharpe:.2f}",
 ax.set_ylabel("Sharpe ratio (ann.)")
 ax.set_title("Rolling 6-Month Sharpe Ratio")
 fig.tight_layout()
-fig.savefig(os.path.join(OUT, "rolling_sharpe.png"), dpi=DPI)
+fig.savefig(os.path.join(OUT, "rolling_sharpe.png"), dpi=DPI, bbox_inches="tight")
 plt.close()
 print("  Saved rolling_sharpe.png")
 

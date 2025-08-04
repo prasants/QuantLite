@@ -57,4 +57,12 @@ __all__ = [
     "SlippageModel",
     # Visualisation
     "plot_time_series",
+    # Ergodicity economics
+    "ergodicity",
+    # Antifragility framework
+    "antifragile",
+    # Scenario engine
+    "scenarios",
 ]
+
+from . import antifragile, ergodicity, scenarios  # noqa: E402

@@ -627,6 +627,68 @@ Same Stephen Few theme, same muted palette, but with hover info, zoom, and nativ
 | `quantlite.metrics` | Basic annualised return, volatility, Sharpe, max drawdown |
 | `quantlite.monte_carlo` | Monte Carlo simulation harness |
 
+## v0.4: The Taleb Stack
+
+Three new modules bringing Nassim Taleb's key ideas into quantitative practice: ergodicity economics, antifragility measurement, and scenario stress testing.
+
+### Ergodicity Economics
+
+The ensemble average lies. The time average tells the truth. Measure the gap and find the optimal Kelly leverage.
+
+```python
+from quantlite.ergodicity import time_average, ensemble_average, ergodicity_gap
+
+returns = [0.50, -0.40, 0.50, -0.40, 0.50, -0.40]
+print(f"Ensemble average: {ensemble_average(returns):+.4f}")   # +0.0500 (looks great)
+print(f"Time average:     {time_average(returns):+.4f}")        # -0.0513 (you go broke)
+print(f"Ergodicity gap:   {ergodicity_gap(returns):+.4f}")      # +0.1013 (the lie)
+```
+
+![Leverage vs Growth](https://raw.githubusercontent.com/prasants/QuantLite/main/examples/ergodicity_leverage.png)
+
+[Documentation: docs/ergodicity.md](docs/ergodicity.md)
+
+### Antifragility Measurement
+
+Quantify whether your portfolio gains from disorder or breaks under it.
+
+```python
+from quantlite.antifragile import antifragility_score
+
+fragile_score = antifragility_score(short_vol_returns)     # Negative: fragile
+robust_score = antifragility_score(index_returns)           # Near zero: robust
+antifragile_score_ = antifragility_score(long_vol_returns)  # Positive: antifragile
+```
+
+![Antifragility Scores](https://raw.githubusercontent.com/prasants/QuantLite/main/examples/antifragility_scores.png)
+
+[Documentation: docs/antifragility.md](docs/antifragility.md)
+
+### Scenario Stress Testing
+
+Build crisis scenarios with a fluent API and stress-test your portfolio against historical and hypothetical crises.
+
+```python
+from quantlite.scenarios import stress_test, SCENARIO_LIBRARY
+
+weights = {"SPX": 0.30, "BTC": 0.15, "ETH": 0.10, "BONDS_10Y": 0.30, "GLD": 0.15}
+result = stress_test(weights, SCENARIO_LIBRARY["2008 GFC"])
+print(f"Portfolio impact: {result['portfolio_impact']:.2%}")
+print(f"Survives: {result['survival']}")
+```
+
+![Scenario Heatmap](https://raw.githubusercontent.com/prasants/QuantLite/main/examples/scenario_heatmap.png)
+
+[Documentation: docs/scenarios.md](docs/scenarios.md)
+
+### New Module Reference
+
+| Module | Description |
+|--------|-------------|
+| `quantlite.ergodicity` | Time-average vs ensemble-average growth, Kelly fraction, leverage effect |
+| `quantlite.antifragile` | Antifragility score, convexity, Fourth Quadrant, barbell allocation, Lindy, skin in the game |
+| `quantlite.scenarios` | Composable scenario engine, pre-built crisis library, fragility heatmap, shock propagation |
+
 ## Design Philosophy
 
 1. **Fat tails are the default.** Gaussian assumptions are explicitly opt-in, never implicit.

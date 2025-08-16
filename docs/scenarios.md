@@ -109,6 +109,8 @@ print(f"Survives: {result['survival']}")
 | `best_asset` | str | Least impacted (or positively impacted) asset |
 | `survival` | bool | Whether portfolio value remains above zero |
 
+![Portfolio Impact by Crisis Scenario](images/scenario_portfolio_impact.png)
+
 ---
 
 ### `fragility_heatmap(weights, scenarios, returns=None)`
@@ -169,6 +171,8 @@ for asset, shock in propagated.items():
 | `correlation_matrix` | ndarray | None | Pre-computed correlation matrix (estimated from returns if None) |
 
 **Returns:** `dict[str, float]` — Asset to propagated shock magnitude after cascade.
+
+![Shock Propagation: BTC -50% Crash](images/shock_propagation_network.png)
 
 ## Building Custom Scenarios
 

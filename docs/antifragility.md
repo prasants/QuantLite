@@ -8,6 +8,8 @@ Nassim Taleb introduced this concept to describe systems that benefit from volat
 
 The `quantlite.antifragile` module provides six tools for measuring where your portfolio sits on the fragile-antifragile spectrum, detecting when you are in Taleb's dangerous Fourth Quadrant, constructing barbell allocations, estimating Lindy survival, and quantifying principal-agent alignment.
 
+![Payoff Convexity: Fragile, Robust, Antifragile](images/payoff_convexity.png)
+
 ## API Reference
 
 ### `antifragility_score(returns)`
@@ -98,6 +100,8 @@ print(result['warning'])
 | `fourth_quadrant` | bool | True if fat-tailed AND nonlinear payoff |
 | `warning` | str | Human-readable advisory |
 
+![Taleb's Four Quadrants](images/fourth_quadrant_map.png)
+
 ---
 
 ### `barbell_allocation(conservative_returns, aggressive_returns, conservative_pct=0.9)`
@@ -136,6 +140,8 @@ print(f"Upside capture (top 10%): {result['upside_capture']:.4f}")
 | `blended_geometric` | float | Geometric mean of blended returns |
 | `max_loss` | float | Worst single-period loss |
 | `upside_capture` | float | Mean of top 10% of blended returns |
+
+![Barbell vs Balanced: Cumulative Wealth](images/barbell_vs_balanced.png)
 
 ---
 

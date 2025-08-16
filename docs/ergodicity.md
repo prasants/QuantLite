@@ -12,6 +12,8 @@ Consider a simple coin flip: heads gives +50%, tails gives -40%. The ensemble av
 
 The `quantlite.ergodicity` module provides tools to quantify this gap, compute optimal leverage via the Kelly criterion, and visualise how leverage destroys time-average growth through volatility drag.
 
+![The Ergodicity Illusion: Ensemble Average vs Median Path](images/ergodicity_gap.png)
+
 ## API Reference
 
 ### `time_average(returns)`
@@ -101,6 +103,8 @@ print(f"Optimal Kelly fraction: {f:.2f}")
 
 **Returns:** `float` — Optimal fraction of capital to deploy. Can be < 0 (short) or > 1 (leveraged).
 
+![Kelly Fraction Shrinks as Volatility Rises](images/kelly_sensitivity.png)
+
 ---
 
 ### `leverage_effect(returns, leverages=None)`
@@ -124,6 +128,8 @@ for lev, growth in result.items():
 | `leverages` | list of float | `[1, 2, 3, 5]` | Leverage multiples to evaluate |
 
 **Returns:** `dict[float, float]` — Mapping of leverage multiple to time-average growth rate. Returns -1.0 for any leverage that would wipe out capital.
+
+![Leverage vs Time-Average Growth](images/ergodicity_leverage.png)
 
 ---
 

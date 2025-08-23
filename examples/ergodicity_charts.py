@@ -127,7 +127,7 @@ def chart_leverage_growth() -> None:
 def chart_kelly_sensitivity() -> None:
     """Chart 3: Kelly fraction sensitivity to volatility."""
     rng = np.random.default_rng(42)
-    volatilities = [0.005, 0.01, 0.02, 0.03, 0.05]
+    volatilities = [0.01, 0.02, 0.03, 0.05, 0.08]
     kelly_fracs = []
 
     for vol in volatilities:
@@ -135,17 +135,18 @@ def chart_kelly_sensitivity() -> None:
         kf = kelly_fraction(rets)
         kelly_fracs.append(kf)
 
-    labels = [f"{v:.3f}" for v in volatilities]
+    labels = [f"{v:.0%}" for v in volatilities]
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    bars = ax.bar(labels, kelly_fracs, color=FEW_PALETTE["primary"], width=0.6)
+    bars = ax.bar(labels, kelly_fracs, color=FEW_PALETTE["primary"], width=0.5,
+                  edgecolor="none")
 
     # Direct labels
     for bar, kf in zip(bars, kelly_fracs):  # noqa: B905
         ax.text(
-            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.2,
-            f"{kf:.1f}", ha="center", va="bottom",
-            color=FEW_PALETTE["grey_dark"], fontsize=10,
+            bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.05,
+            f"{kf:.1f}x", ha="center", va="bottom",
+            color=FEW_PALETTE["grey_dark"], fontsize=11,
         )
 
     ax.set_title("Kelly Fraction Shrinks as Volatility Rises")

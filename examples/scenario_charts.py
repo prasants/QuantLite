@@ -41,21 +41,26 @@ def chart_portfolio_impact() -> None:
     ]
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    bars = ax.barh(names, impacts, color=colours, height=0.6)
+    y_pos = range(len(names))
+    bars = ax.barh(y_pos, impacts, color=colours, height=0.5, edgecolor="none")
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(names)
 
-    # Direct labels
-    for bar, imp in zip(bars, impacts):  # noqa: B905
+    # Direct labels (always outside bar end for readability)
+    for i, (_bar, imp) in enumerate(zip(bars, impacts)):  # noqa: B905
         ax.text(
-            imp - 0.01, bar.get_y() + bar.get_height() / 2,
-            f"{imp:.1%}", ha="right", va="center",
-            color="white", fontsize=10, fontweight="bold",
+            imp + 0.004, i,
+            f"{imp:.1%}", ha="left", va="center",
+            color=FEW_PALETTE["grey_dark"], fontsize=10, fontweight="bold",
         )
 
     ax.set_title("Portfolio Impact by Crisis Scenario")
     ax.set_xlabel("Portfolio impact")
     ax.axvline(0, color="#999999", linewidth=0.8)
+    ax.set_xlim(min(impacts) * 1.15, 0.02)
+    ax.yaxis.grid(False)
 
-    fig.savefig(DOCS_IMAGES / "scenario_portfolio_impact.png")
+    fig.savefig(DOCS_IMAGES / "scenario_portfolio_impact.png", bbox_inches="tight")
     plt.close(fig)
     print("Saved scenario_portfolio_impact.png")
 
@@ -111,13 +116,21 @@ def chart_shock_propagation() -> None:
     # Draw asset circles
     for name, info in assets.items():
         colour = FEW_PALETTE["negative"] if name == "BTC" else FEW_PALETTE["primary"]
-        size = 2000 if name == "BTC" else 1400
+        label = "BNDS" if name == "BONDS_10Y" else name
+        size = 2000 if name == "BTC" else 1600
         ax.scatter(info["x"], info["y"], s=size, c=colour, zorder=5, edgecolors="white", linewidth=2)
         ax.text(
-            info["x"], info["y"], name,
-            ha="center", va="center", fontsize=10,
+            info["x"], info["y"], label,
+            ha="center", va="center", fontsize=9,
             fontweight="bold", color="white", zorder=6,
         )
+        # Full name label below for bonds
+        if name == "BONDS_10Y":
+            ax.text(
+                info["x"], info["y"] - 0.07, "BONDS_10Y",
+                ha="center", va="top", fontsize=7,
+                color=FEW_PALETTE["grey_mid"],
+            )
 
     fig.savefig(DOCS_IMAGES / "shock_propagation_network.png")
     plt.close(fig)

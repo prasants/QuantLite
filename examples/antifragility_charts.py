@@ -69,82 +69,93 @@ def chart_payoff_convexity() -> None:
 
 
 def chart_fourth_quadrant() -> None:
-    """Taleb's Four Quadrants: kurtosis vs payoff complexity."""
+    """Taleb's Four Quadrants: kurtosis vs payoff complexity.
+
+    Uses sqrt-transformed x-axis so thin-tailed and fat-tailed regions
+    get equal visual space. Labels are positioned with white backgrounds
+    to avoid overlap with data points.
+    """
     rng = np.random.default_rng(42)
 
-    # Use log scale for x-axis to give thin-tailed points proper space.
-    # Kurtosis boundary at 3 (more realistic than 1).
     kurt_boundary = 3.0
-    nonlin_boundary = 2.0
+    nonlin_boundary = 2.5
 
-    # Generate synthetic points spread across quadrants
-    points = []
-    colours = []
-    labels = []
+    def tx(x):
+        """Sqrt transform for x-axis."""
+        return np.sqrt(np.asarray(x))
 
-    # Q1: Thin-tailed, simple (safe zone)
-    for _ in range(8):
-        points.append((rng.uniform(0.1, kurt_boundary), rng.uniform(0.2, nonlin_boundary)))
-        colours.append(FEW_PALETTE["primary"])
-        labels.append("Q1")
+    # Generate synthetic points in each quadrant
+    q1 = [(rng.uniform(0.2, kurt_boundary), rng.uniform(0.3, nonlin_boundary))
+           for _ in range(8)]
+    q2 = [(rng.uniform(0.2, kurt_boundary), rng.uniform(nonlin_boundary, 5.5))
+           for _ in range(6)]
+    q3 = [(rng.uniform(kurt_boundary, 25), rng.uniform(0.3, nonlin_boundary))
+           for _ in range(6)]
+    q4 = [(rng.uniform(kurt_boundary, 25), rng.uniform(nonlin_boundary, 5.5))
+           for _ in range(10)]
 
-    # Q2: Thin-tailed, complex
-    for _ in range(6):
-        points.append((rng.uniform(0.1, kurt_boundary), rng.uniform(nonlin_boundary, 5.5)))
-        colours.append(FEW_PALETTE["secondary"])
-        labels.append("Q2")
+    fig, ax = plt.subplots(figsize=(11, 7))
 
-    # Q3: Fat-tailed, simple
-    for _ in range(6):
-        points.append((rng.uniform(kurt_boundary, 30), rng.uniform(0.2, nonlin_boundary)))
-        colours.append(FEW_PALETTE["neutral"])
-        labels.append("Q3")
+    for pts, colour in [
+        (q1, FEW_PALETTE["primary"]),
+        (q2, FEW_PALETTE["secondary"]),
+        (q3, FEW_PALETTE["neutral"]),
+        (q4, FEW_PALETTE["negative"]),
+    ]:
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        ax.scatter(tx(xs), ys, c=colour, s=65, zorder=5,
+                   edgecolors="white", linewidth=0.8)
 
-    # Q4: Fat-tailed, complex (DANGER)
-    for _ in range(10):
-        points.append((rng.uniform(kurt_boundary, 30), rng.uniform(nonlin_boundary, 5.5)))
-        colours.append(FEW_PALETTE["negative"])
-        labels.append("Q4")
-
-    xs, ys = zip(*points)  # noqa: B905
-
-    fig, ax = plt.subplots(figsize=(10, 6.5))
-
-    # Shade the Fourth Quadrant
-    ax.axvspan(kurt_boundary, 35, ymin=nonlin_boundary / 6.0, ymax=1.0,
-               color=FEW_PALETTE["negative"], alpha=0.06, zorder=0)
-
-    ax.scatter(xs, ys, c=colours, s=70, zorder=5, edgecolors="white", linewidth=0.8)
-
-    # Quadrant boundary lines
-    ax.axvline(kurt_boundary, color=FEW_PALETTE["grey_mid"], linestyle="--",
-               linewidth=1, alpha=0.6)
+    # Quadrant boundaries
+    bx = tx(kurt_boundary)
+    ax.axvline(bx, color=FEW_PALETTE["grey_mid"], linestyle="--",
+               linewidth=1, alpha=0.5)
     ax.axhline(nonlin_boundary, color=FEW_PALETTE["grey_mid"], linestyle="--",
-               linewidth=1, alpha=0.6)
+               linewidth=1, alpha=0.5)
 
-    # Quadrant labels: positioned in clear areas, not on data points
-    label_style = {"fontsize": 10, "ha": "center", "va": "center"}
+    # Shade fourth quadrant
+    x_max = tx(30)
+    ax.fill_between([bx, x_max], nonlin_boundary, 5.8,
+                    color=FEW_PALETTE["negative"], alpha=0.06, zorder=0)
 
-    ax.text(1.5, 1.0, "First Quadrant\nThin-tailed, Simple",
-            color=FEW_PALETTE["primary"], alpha=0.7, **label_style)
-    ax.text(1.5, 4.2, "Second Quadrant\nThin-tailed, Complex",
-            color=FEW_PALETTE["secondary"], alpha=0.7, **label_style)
-    ax.text(18.0, 1.0, "Third Quadrant\nFat-tailed, Simple",
-            color=FEW_PALETTE["neutral"], alpha=0.8, **label_style)
-    ax.text(18.0, 4.2, "FOURTH QUADRANT\nFat-tailed + Complex",
-            color=FEW_PALETTE["negative"], fontsize=11, fontweight="bold",
-            ha="center", va="center")
-    ax.text(18.0, 3.6, "Models fail here",
-            color=FEW_PALETTE["negative"], fontsize=9, fontstyle="italic",
-            ha="center", va="center", alpha=0.7)
+    # Quadrant labels with white background for legibility
+    bbox_style = {"facecolor": "white", "edgecolor": "none",
+                  "alpha": 0.7, "pad": 3}
 
-    ax.set_xlim(0, 33)
+    ax.text(tx(1.5), 1.2, "FIRST QUADRANT\nThin-tailed + Simple\n(models work here)",
+            ha="center", va="center", fontsize=9,
+            color=FEW_PALETTE["primary"], fontweight="bold", bbox=bbox_style)
+    ax.text(tx(1.2), 5.3, "SECOND QUADRANT\nThin-tailed + Complex",
+            ha="center", va="center", fontsize=9,
+            color=FEW_PALETTE["secondary"], fontweight="bold", bbox=bbox_style)
+    ax.text(tx(14), 1.2, "THIRD QUADRANT\nFat-tailed + Simple",
+            ha="center", va="center", fontsize=9,
+            color=FEW_PALETTE["neutral"], fontweight="bold", bbox=bbox_style)
+    ax.text(tx(14), 4.5, "FOURTH QUADRANT\nFat-tailed + Complex",
+            ha="center", va="center", fontsize=12,
+            color=FEW_PALETTE["negative"], fontweight="bold",
+            bbox={"facecolor": "white", "edgecolor": FEW_PALETTE["negative"],
+                  "alpha": 0.85, "pad": 5, "linewidth": 1.5})
+    ax.text(tx(14), 3.7, "Models are dangerous here.\nUse extreme caution.",
+            ha="center", va="center", fontsize=9,
+            color=FEW_PALETTE["negative"], fontstyle="italic", alpha=0.7)
+
+    # Custom x-ticks in original kurtosis space
+    tick_vals = [0, 1, 2, 3, 5, 10, 15, 20, 25]
+    ax.set_xticks(tx(tick_vals))
+    ax.set_xticklabels([str(v) for v in tick_vals])
+
+    ax.set_xlim(0, tx(30))
     ax.set_ylim(0, 5.8)
-    ax.set_title("Taleb's Four Quadrants", fontsize=13)
+    ax.set_title("Taleb's Four Quadrants", fontsize=14, pad=12)
     ax.set_xlabel("Excess kurtosis (fat-tailedness)")
     ax.set_ylabel("Payoff nonlinearity (complexity)")
+    ax.yaxis.grid(False)
+    ax.xaxis.grid(False)
 
-    fig.savefig(DOCS_IMAGES / "fourth_quadrant_map.png", bbox_inches="tight")
+    fig.savefig(DOCS_IMAGES / "fourth_quadrant_map.png",
+                bbox_inches="tight", dpi=150)
     plt.close(fig)
     print("Saved fourth_quadrant_map.png")
 

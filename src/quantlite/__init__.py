@@ -63,6 +63,12 @@ __all__ = [
     "antifragile",
     # Scenario engine
     "scenarios",
+    # Strategy forensics
+    "forensics",
+    # Overfitting detection
+    "overfit",
+    # Resampled backtesting
+    "resample",
 ]
 
-from . import antifragile, ergodicity, scenarios  # noqa: E402
+from . import antifragile, ergodicity, forensics, overfit, resample, scenarios  # noqa: E402

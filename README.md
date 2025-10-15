@@ -689,6 +689,77 @@ print(f"Survives: {result['survival']}")
 | `quantlite.antifragile` | Antifragility score, convexity, Fourth Quadrant, barbell allocation, Lindy, skin in the game |
 | `quantlite.scenarios` | Composable scenario engine, pre-built crisis library, fragility heatmap, shock propagation |
 
+## v0.5: Honest Backtesting
+
+Three new modules that answer the question every quant should ask but rarely does: "Is this backtest result real, or did I just get lucky?"
+
+### Strategy Forensics
+
+Most reported Sharpe ratios are inflated by multiple testing. The `quantlite.forensics` module implements Lopez de Prado's Deflated Sharpe Ratio framework to separate signal from noise.
+
+```python
+from quantlite.forensics import deflated_sharpe_ratio
+
+# You tried 50 strategies and the best had Sharpe 1.8
+dsr = deflated_sharpe_ratio(observed_sharpe=1.8, n_trials=50, n_obs=252)
+print(f"Probability Sharpe is genuine: {dsr:.2%}")
+```
+
+![Deflated Sharpe](docs/images/deflated_sharpe.png)
+
+![Minimum Track Record](docs/images/min_track_record.png)
+
+![Signal Decay](docs/images/signal_decay.png)
+
+[Documentation: docs/forensics.md](docs/forensics.md)
+
+### Overfitting Detection
+
+The more strategies you test, the more likely your best one is a fluke. Detect and quantify backtest overfitting with CSCV, walk-forward validation, and the TrialTracker.
+
+```python
+from quantlite.overfit import TrialTracker
+
+with TrialTracker("momentum_search") as tracker:
+    for lookback in [10, 20, 40, 60, 120]:
+        tracker.log(params={"lookback": lookback}, sharpe=1.2, returns=returns)
+    print(f"Overfitting probability: {tracker.overfitting_probability():.2%}")
+```
+
+![Overfitting Trials](docs/images/overfitting_trials.png)
+
+![Walk-Forward Validation](docs/images/walk_forward.png)
+
+[Documentation: docs/overfitting.md](docs/overfitting.md)
+
+### Resampled Backtesting
+
+A single backtest is a single draw from a distribution. Bootstrap methods build honest confidence intervals around any performance metric.
+
+```python
+from quantlite.resample import bootstrap_sharpe_distribution
+
+result = bootstrap_sharpe_distribution(returns, n_samples=2000, seed=42)
+print(f"Sharpe: {result['point_estimate']:.2f}")
+print(f"95% CI: [{result['ci_lower']:.2f}, {result['ci_upper']:.2f}]")
+```
+
+![Sharpe Distribution](docs/images/sharpe_distribution.png)
+
+![Drawdown CI](docs/images/drawdown_ci.png)
+
+![Block vs Stationary](docs/images/block_vs_stationary.png)
+
+[Documentation: docs/resampling.md](docs/resampling.md)
+
+### New Module Reference
+
+| Module | Description |
+|--------|-------------|
+| `quantlite.forensics` | Deflated Sharpe Ratio, Probabilistic Sharpe, haircut adjustments, minimum track record, signal decay |
+| `quantlite.overfit` | CSCV/PBO, TrialTracker, multiple testing correction, walk-forward validation |
+| `quantlite.resample` | Block and stationary bootstrap, confidence intervals for Sharpe, drawdown, and custom metrics |
+
 ## Design Philosophy
 
 1. **Fat tails are the default.** Gaussian assumptions are explicitly opt-in, never implicit.

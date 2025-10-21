@@ -2,6 +2,10 @@
 
 QuantLite provides a unified `fetch()` function that pulls OHLCV data from multiple sources through a single, consistent interface. Whether you need equities from Yahoo Finance, crypto candles from Binance, macro series from FRED, or data from local files, the API is the same.
 
+## Overview
+
+![Unified Data Architecture](images/data_sources.png)
+
 ## Quick Start
 
 ```python

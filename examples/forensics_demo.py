@@ -13,7 +13,11 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from quantlite.forensics import deflated_sharpe_ratio, min_track_record_length, signal_decay
+from quantlite.forensics import (
+    deflated_sharpe_ratio,
+    min_track_record_length,
+    signal_decay,
+)
 from quantlite.viz.theme import FEW_PALETTE, apply_few_theme, direct_label
 
 apply_few_theme()
@@ -24,47 +28,52 @@ OUT.mkdir(parents=True, exist_ok=True)
 # ---------------------------------------------------------------------------
 # Chart 1: Deflated Sharpe Ratio vs number of trials
 # ---------------------------------------------------------------------------
-trials = [1, 5, 10, 20, 50, 100]
-observed = 2.0
-n_obs = 252
-
-dsr_values = [deflated_sharpe_ratio(observed, t, n_obs) for t in trials]
+# Use a modest Sharpe with few observations so DSR actually varies.
+trials = [1, 5, 10, 25, 50, 100, 200]
+observed_sharpes = [0.5, 0.8, 1.0]
+n_obs = 30
+colours = [FEW_PALETTE["primary"], FEW_PALETTE["secondary"], FEW_PALETTE["positive"]]
 
 fig, ax = plt.subplots(figsize=(10, 5))
-bars = ax.bar(
-    range(len(trials)),
-    dsr_values,
-    color=FEW_PALETTE["primary"],
-    width=0.6,
-)
-ax.set_xticks(range(len(trials)))
-ax.set_xticklabels([str(t) for t in trials])
-ax.set_xlabel("Number of trials tested")
-ax.set_ylabel("Deflated Sharpe Ratio (probability)")
-ax.set_title("The More You Try, the Less You Should Believe")
+bar_width = 0.25
+x = np.arange(len(trials))
 
-# Direct labels on bars
-for i, val in enumerate(dsr_values):
+for j, obs_sr in enumerate(observed_sharpes):
+    dsr_vals = [deflated_sharpe_ratio(obs_sr, t, n_obs) for t in trials]
+    offset = (j - 1) * bar_width
+    bars = ax.bar(x + offset, dsr_vals, bar_width, color=colours[j], label=None)
+    # Direct label the series name on the last bar
     direct_label(
-        ax, i, val + 0.02, f"{val:.2f}",
-        ha="center", va="bottom", fontsize=10,
+        ax,
+        x[-1] + offset + 0.05,
+        dsr_vals[-1],
+        f"SR = {obs_sr}",
+        colour=colours[j],
+        ha="left",
+        va="center",
+        fontsize=9,
     )
 
-# Reference line for 95% confidence threshold
-ax.axhline(
-    y=0.95, color=FEW_PALETTE["secondary"], linewidth=1.5, linestyle="--",
-)
+ax.set_xticks(x)
+ax.set_xticklabels([str(t) for t in trials])
+ax.set_xlabel("Number of strategies tested")
+ax.set_ylabel("Probability Sharpe is genuine")
+ax.set_title("The More You Try, the Less You Should Believe")
+
+# 95% confidence threshold
+ax.axhline(y=0.95, color=FEW_PALETTE["negative"], linewidth=1.2, linestyle="--")
 ax.annotate(
-    "95% confidence threshold",
-    xy=(4.5, 0.95),
-    fontsize=10,
-    color=FEW_PALETTE["secondary"],
-    ha="right",
+    "95% confidence",
+    xy=(0.3, 0.96),
+    fontsize=9,
+    color=FEW_PALETTE["negative"],
+    ha="left",
     va="bottom",
     bbox={"boxstyle": "round,pad=0.2", "fc": "white", "ec": "none", "alpha": 0.9},
 )
 
-ax.set_ylim(0, 1.15)
+ax.set_ylim(0, 1.1)
+ax.set_xlim(-0.5, len(trials) - 0.2)
 fig.savefig(OUT / "deflated_sharpe.png", dpi=150, bbox_inches="tight")
 plt.close(fig)
 print(f"Saved {OUT / 'deflated_sharpe.png'}")
@@ -72,29 +81,38 @@ print(f"Saved {OUT / 'deflated_sharpe.png'}")
 # ---------------------------------------------------------------------------
 # Chart 2: Minimum Track Record Length
 # ---------------------------------------------------------------------------
-sharpe_range = np.linspace(0.5, 3.0, 100)
+sharpe_range = np.linspace(0.3, 3.0, 50)
 min_years = [min_track_record_length(s) / 252 for s in sharpe_range]
 
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(sharpe_range, min_years, color=FEW_PALETTE["primary"], linewidth=2)
 ax.fill_between(
-    sharpe_range, 0, min_years,
-    color=FEW_PALETTE["negative"], alpha=0.12,
+    sharpe_range,
+    0,
+    min_years,
+    color=FEW_PALETTE["negative"],
+    alpha=0.12,
+    label="Insufficient data",
 )
 
-# Label the shaded region
+# Label the shaded region with white bbox
 ax.text(
-    1.0, 2.0, "Insufficient data",
-    fontsize=11, color=FEW_PALETTE["negative"], alpha=0.7,
+    1.5,
+    max(min_years) * 0.25,
+    "Insufficient data",
+    fontsize=11,
+    color=FEW_PALETTE["negative"],
+    alpha=0.8,
     style="italic",
+    bbox={"boxstyle": "round,pad=0.3", "fc": "white", "ec": "none", "alpha": 0.8},
 )
 
 # Direct label on the curve
-mid_idx = 30
+mid_idx = 20
 direct_label(
     ax,
     sharpe_range[mid_idx],
-    min_years[mid_idx] + 0.5,
+    min_years[mid_idx] + max(min_years) * 0.05,
     "Minimum track record",
     colour=FEW_PALETTE["primary"],
     ha="left",
@@ -104,7 +122,7 @@ direct_label(
 ax.set_xlabel("Observed Sharpe Ratio")
 ax.set_ylabel("Minimum track record (years)")
 ax.set_title("Minimum Track Record Length to Trust a Sharpe Ratio")
-ax.set_xlim(0.5, 3.0)
+ax.set_xlim(0.3, 3.0)
 ax.set_ylim(0, max(min_years) * 1.1)
 fig.savefig(OUT / "min_track_record.png", dpi=150, bbox_inches="tight")
 plt.close(fig)
@@ -128,8 +146,12 @@ decay_corrs = [x[1] for x in result["decay_curve"]]
 
 fig, ax = plt.subplots(figsize=(10, 5))
 ax.plot(
-    decay_lags, decay_corrs,
-    color=FEW_PALETTE["primary"], linewidth=2, marker="o", markersize=5,
+    decay_lags,
+    decay_corrs,
+    color=FEW_PALETTE["primary"],
+    linewidth=2,
+    marker="o",
+    markersize=5,
 )
 
 # Direct labels
@@ -139,15 +161,23 @@ for i in range(len(decay_lags)):
     va = "bottom" if i % 2 == 0 else "top"
     offset = 0.01 if va == "bottom" else -0.01
     direct_label(
-        ax, lg, corr + offset, f"{corr:.3f}",
-        ha="center", va=va, fontsize=9,
+        ax,
+        lg,
+        corr + offset,
+        f"{corr:.3f}",
+        ha="center",
+        va=va,
+        fontsize=9,
     )
 
 # Mark half-life
 if result["half_life"] is not None:
     hl = result["half_life"]
     ax.axvline(
-        x=hl, color=FEW_PALETTE["secondary"], linewidth=1.5, linestyle="--",
+        x=hl,
+        color=FEW_PALETTE["secondary"],
+        linewidth=1.5,
+        linestyle="--",
     )
     ax.annotate(
         f"Half-life: {hl:.0f} periods",
@@ -155,7 +185,12 @@ if result["half_life"] is not None:
         fontsize=10,
         color=FEW_PALETTE["secondary"],
         ha="left",
-        bbox={"boxstyle": "round,pad=0.2", "fc": "white", "ec": "none", "alpha": 0.9},
+        bbox={
+            "boxstyle": "round,pad=0.2",
+            "fc": "white",
+            "ec": "none",
+            "alpha": 0.9,
+        },
     )
 
 ax.set_xlabel("Lag (periods)")

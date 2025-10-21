@@ -2,6 +2,10 @@
 
 QuantLite's tearsheet engine generates professional portfolio reports from backtest results, with interactive charts and clean, print-friendly layouts following Stephen Few's visual design principles.
 
+## Overview
+
+![Tearsheet Preview](images/tearsheet_preview.png)
+
 ## Quick Start
 
 ```python

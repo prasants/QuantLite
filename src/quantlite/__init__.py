@@ -69,6 +69,22 @@ __all__ = [
     "overfit",
     # Resampled backtesting
     "resample",
+    # Contagion metrics
+    "contagion",
+    # Network risk
+    "network",
+    # Diversification analysis
+    "diversification",
 ]
 
-from . import antifragile, ergodicity, forensics, overfit, resample, scenarios  # noqa: E402
+from . import (  # noqa: E402
+    antifragile,
+    contagion,
+    diversification,
+    ergodicity,
+    forensics,
+    network,
+    overfit,
+    resample,
+    scenarios,
+)

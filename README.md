@@ -626,6 +626,9 @@ Same Stephen Few theme, same muted palette, but with hover info, zoom, and nativ
 | `quantlite.viz` | Stephen Few-themed risk, dependency, regime, and portfolio charts |
 | `quantlite.metrics` | Basic annualised return, volatility, Sharpe, max drawdown |
 | `quantlite.monte_carlo` | Monte Carlo simulation harness |
+| `quantlite.contagion` | CoVaR, Delta CoVaR, MES, Granger causality, causal networks |
+| `quantlite.network` | Correlation networks, eigenvector centrality, cascade simulation, community detection |
+| `quantlite.diversification` | ENB, entropy diversification, tail diversification, diversification ratio, Herfindahl index |
 
 ## v0.4: The Taleb Stack
 
@@ -759,6 +762,94 @@ print(f"95% CI: [{result['ci_lower']:.2f}, {result['ci_upper']:.2f}]")
 | `quantlite.forensics` | Deflated Sharpe Ratio, Probabilistic Sharpe, haircut adjustments, minimum track record, signal decay |
 | `quantlite.overfit` | CSCV/PBO, TrialTracker, multiple testing correction, walk-forward validation |
 | `quantlite.resample` | Block and stationary bootstrap, confidence intervals for Sharpe, drawdown, and custom metrics |
+
+## v0.6: Systemic Risk and Diversification
+
+Three new modules for understanding how risk propagates through portfolios and markets: contagion analysis, financial network modelling, and diversification diagnostics.
+
+### Contagion and Systemic Risk
+
+When one asset crashes, how much does it drag down the rest? CoVaR and Marginal Expected Shortfall measure the contagion channels that standard correlation misses.
+
+```python
+from quantlite.contagion import covar, systemic_risk_contributions
+
+result = covar(market_returns, bank_returns, alpha=0.05)
+print(f"Unconditional VaR: {result['var_b']:.4f}")
+print(f"CoVaR (market stress): {result['covar']:.4f}")
+
+contributions = systemic_risk_contributions(returns_df, alpha=0.05)
+for asset, mes in contributions.items():
+    print(f"{asset:15s} MES: {mes:+.4f}")
+```
+
+![CoVaR Comparison](docs/images/covar_comparison.png)
+
+![Systemic Risk Contributions](docs/images/systemic_risk_contributions.png)
+
+![Granger Causality](docs/images/granger_causality.png)
+
+[Documentation: docs/contagion.md](docs/contagion.md)
+
+### Financial Network Analysis
+
+Model markets as networks. Find the most systemically important assets, simulate shock cascades, and detect communities of co-moving assets.
+
+```python
+from quantlite.network import network_summary, cascade_simulation
+
+summary = network_summary(returns_df, threshold=0.4)
+for i, name in enumerate(summary["nodes"]):
+    print(f"{name:10s} centrality: {summary['centrality'][i]:.4f}")
+
+cascade = cascade_simulation(
+    summary["network"]["adjacency_matrix"],
+    shock_node=0,
+    shock_magnitude=-0.50,
+)
+```
+
+![Correlation Network](docs/images/correlation_network.png)
+
+![Cascade Simulation](docs/images/cascade_simulation.png)
+
+![Eigenvector Centrality](docs/images/eigenvector_centrality.png)
+
+[Documentation: docs/network.md](docs/network.md)
+
+### Diversification Analysis
+
+You think you are diversified. These six metrics tell you whether that is actually true, and whether your diversification survives crises.
+
+```python
+from quantlite.diversification import (
+    effective_number_of_bets,
+    tail_diversification,
+)
+
+enb = effective_number_of_bets(weights, cov)
+print(f"Assets: 10, Effective bets: {enb:.1f}")
+
+td = tail_diversification(returns_df, weights, alpha=0.05)
+print(f"Normal diversification: {td['normal_diversification']:.3f}")
+print(f"Tail diversification:   {td['tail_diversification']:.3f}")
+```
+
+![Diversification Metrics](docs/images/diversification_metrics.png)
+
+![Tail Diversification](docs/images/tail_diversification.png)
+
+![Marginal Tail Risk](docs/images/marginal_tail_risk.png)
+
+[Documentation: docs/diversification.md](docs/diversification.md)
+
+### New Module Reference
+
+| Module | Description |
+|--------|-------------|
+| `quantlite.contagion` | CoVaR, Delta CoVaR, Marginal Expected Shortfall, Granger causality, causal networks |
+| `quantlite.network` | Correlation networks, eigenvector centrality, cascade simulation, community detection |
+| `quantlite.diversification` | Effective Number of Bets, entropy diversification, tail diversification, diversification ratio, Herfindahl index |
 
 ## Design Philosophy
 

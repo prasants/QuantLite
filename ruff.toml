@@ -3,7 +3,7 @@ line-length = 100
 
 [lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
-ignore = ["E501"]
+ignore = ["E501", "B905", "B007"]
 
 [lint.isort]
 known-first-party = ["quantlite"]

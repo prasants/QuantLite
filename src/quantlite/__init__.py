@@ -75,11 +75,14 @@ __all__ = [
     "network",
     # Diversification analysis
     "diversification",
+    # Crypto-native risk
+    "crypto",
 ]
 
 from . import (  # noqa: E402
     antifragile,
     contagion,
+    crypto,
     diversification,
     ergodicity,
     forensics,

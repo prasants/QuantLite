@@ -629,6 +629,9 @@ Same Stephen Few theme, same muted palette, but with hover info, zoom, and nativ
 | `quantlite.contagion` | CoVaR, Delta CoVaR, MES, Granger causality, causal networks |
 | `quantlite.network` | Correlation networks, eigenvector centrality, cascade simulation, community detection |
 | `quantlite.diversification` | ENB, entropy diversification, tail diversification, diversification ratio, Herfindahl index |
+| `quantlite.crypto.stablecoin` | Depeg probability, peg deviation tracking, recovery time, reserve risk scoring |
+| `quantlite.crypto.exchange` | Exchange concentration (HHI), wallet risk, proof of reserves, liquidity risk, slippage |
+| `quantlite.crypto.onchain` | Wallet exposure, TVL tracking, DeFi dependency graphs, smart contract risk scoring |
 
 ## v0.4: The Taleb Stack
 

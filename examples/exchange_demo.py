@@ -158,3 +158,4 @@ plt.close()
 print("Saved exchange_slippage.png")
 
 print("\nAll exchange charts generated successfully.")
+# Chart cache refresh 20260219T171133Z

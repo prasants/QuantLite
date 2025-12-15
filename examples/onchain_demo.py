@@ -216,3 +216,4 @@ plt.close()
 print("Saved onchain_contract_risk.png")
 
 print("\nAll on-chain charts generated successfully.")
+# Chart cache refresh 20260219T171133Z

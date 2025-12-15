@@ -258,3 +258,4 @@ for key, event in HISTORICAL_DEPEGS.items():
     recovered = f"{event['recovery_days']} days" if event["recovery_days"] else "Never"
     print(f"{event['name']}: {event['magnitude']:.1%} depeg, recovered: {recovered}")
 ```
+

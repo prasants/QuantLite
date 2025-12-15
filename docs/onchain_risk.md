@@ -250,3 +250,4 @@ for factor, details in result["factors"].items():
 ```
 
 ![Contract Risk Scores](images/onchain_contract_risk.png)
+

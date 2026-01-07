@@ -632,6 +632,69 @@ Same Stephen Few theme, same muted palette, but with hover info, zoom, and nativ
 | `quantlite.crypto.stablecoin` | Depeg probability, peg deviation tracking, recovery time, reserve risk scoring |
 | `quantlite.crypto.exchange` | Exchange concentration (HHI), wallet risk, proof of reserves, liquidity risk, slippage |
 | `quantlite.crypto.onchain` | Wallet exposure, TVL tracking, DeFi dependency graphs, smart contract risk scoring |
+| `quantlite.factors.classical` | Fama-French three/five-factor, Carhart four-factor, factor attribution, factor summary |
+| `quantlite.factors.custom` | CustomFactor, significance testing, correlation matrix, factor portfolios, decay analysis |
+| `quantlite.factors.tail_risk` | CVaR decomposition, regime factor exposure, crowding score, tail factor beta |
+
+## v0.8: Factor Models
+
+Three modules for comprehensive factor analysis: classical academic models, custom factor tools, and tail-risk-aware factor decomposition.
+
+### Classical Factor Models
+
+Decompose returns into systematic factor exposures and genuine alpha.
+
+```python
+from quantlite.factors import fama_french_three, factor_summary
+
+# Fama-French three-factor regression
+result = fama_french_three(fund_returns, market, smb, hml)
+print(f"Alpha: {result['alpha']:.5f} (t={result['t_stats']['alpha']:.2f})")
+print(f"Market beta: {result['betas']['market']:.3f}")
+print(f"R-squared: {result['r_squared']:.3f}")
+```
+
+![Factor Betas](docs/images/factor_betas.png)
+
+### Custom Factor Tools
+
+Build, test, and analyse proprietary factors.
+
+```python
+from quantlite.factors import CustomFactor, factor_portfolio, factor_decay
+
+# Test factor decay
+decay = factor_decay(returns, momentum_signal, max_lag=20)
+print(f"Half-life: {decay['half_life']:.1f} periods")
+
+# Build long-short portfolios
+result = factor_portfolio(stock_returns, factor_values, n_quantiles=5)
+print(f"Long-short spread: {result['spread'] * 252:.2%} annualised")
+```
+
+![Factor Quintiles](docs/images/factor_quintiles.png)
+
+### Tail Risk Factor Analysis
+
+Understand how factor exposures behave in the tails and across regimes.
+
+```python
+from quantlite.factors import tail_factor_beta, factor_crowding_score
+
+# Tail betas: how exposures amplify in crises
+result = tail_factor_beta(returns, [market, value], ["Market", "Value"])
+for name in ["Market", "Value"]:
+    print(f"{name}: full={result['full_betas'][name]:.2f}, "
+          f"tail={result['tail_betas'][name]:.2f}")
+
+# Factor crowding detection
+crowd = factor_crowding_score([value_rets, momentum_rets])
+print(f"Crowding score: {crowd['current_score']:.3f}")
+```
+
+![Factor Crowding](docs/images/factor_crowding.png)
+
+See [docs/factors_classical.md](docs/factors_classical.md), [docs/factors_custom.md](docs/factors_custom.md), and [docs/factors_tail_risk.md](docs/factors_tail_risk.md) for the full API reference.
 
 ## v0.4: The Taleb Stack
 

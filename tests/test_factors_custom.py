@@ -9,6 +9,8 @@ from quantlite.factors.custom import (
     factor_correlation_matrix,
     factor_decay,
     factor_portfolio,
+)
+from quantlite.factors.custom import (
     test_factor_significance as check_factor_significance,
 )
 

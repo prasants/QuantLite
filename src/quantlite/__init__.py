@@ -77,6 +77,8 @@ __all__ = [
     "diversification",
     # Crypto-native risk
     "crypto",
+    # Fat-tail Monte Carlo simulation
+    "simulation",
 ]
 
 from . import (  # noqa: E402
@@ -90,4 +92,5 @@ from . import (  # noqa: E402
     overfit,
     resample,
     scenarios,
+    simulation,
 )

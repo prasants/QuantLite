@@ -635,6 +635,104 @@ Same Stephen Few theme, same muted palette, but with hover info, zoom, and nativ
 | `quantlite.factors.classical` | Fama-French three/five-factor, Carhart four-factor, factor attribution, factor summary |
 | `quantlite.factors.custom` | CustomFactor, significance testing, correlation matrix, factor portfolios, decay analysis |
 | `quantlite.factors.tail_risk` | CVaR decomposition, regime factor exposure, crowding score, tail factor beta |
+| `quantlite.simulation.evt_simulation` | EVT tail simulation, parametric tail simulation, historical bootstrap EVT, scenario fan |
+| `quantlite.simulation.copula_mc` | Gaussian copula MC, t-copula MC, stress correlation MC, joint tail probability |
+| `quantlite.simulation.regime_mc` | Regime-switching simulation, stress test scenarios, reverse stress test, simulation summary |
+
+## v0.9: Fat-Tail Monte Carlo
+
+Three simulation families that go beyond naive Monte Carlo. Standard MC assumes returns are Gaussian and independent. QuantLite's fat-tail MC uses EVT for realistic tails, copulas for joint dependence, and regime switching for structural breaks.
+
+### EVT Tail Simulation
+
+Generate scenarios with GPD-fitted tails that respect the true shape of financial returns.
+
+```python
+import numpy as np
+from quantlite.simulation import evt_tail_simulation, scenario_fan
+
+rng = np.random.default_rng(42)
+returns = np.concatenate([
+    rng.normal(0.0003, 0.01, 900),
+    rng.standard_t(3, 100) * 0.03,
+])
+
+# EVT-based scenario generation
+simulated = evt_tail_simulation(returns, n_scenarios=20000, seed=42)
+print(f"Historical 1st pctl: {np.percentile(returns, 1):.4f}")
+print(f"Simulated 1st pctl:  {np.percentile(simulated, 1):.4f}")
+
+# Fan chart across multiple horizons
+fan = scenario_fan(returns, horizons=[1, 5, 21, 63, 252])
+for h in fan["horizons"]:
+    p5, p95 = fan["fans"][h]["5"], fan["fans"][h]["95"]
+    print(f"  {h:>3}d: [{p5:+.2%}, {p95:+.2%}]")
+```
+
+![EVT Tail Simulation](docs/images/evt_tail_simulation.png)
+
+![Scenario Fan](docs/images/scenario_fan.png)
+
+### Copula Monte Carlo
+
+Multivariate simulation that preserves fat-tailed marginals and captures tail dependence.
+
+```python
+import numpy as np
+from quantlite.simulation import t_copula_mc, joint_tail_probability
+
+rng = np.random.default_rng(42)
+fund_a = np.concatenate([rng.normal(0.0005, 0.012, 900), rng.standard_t(3, 100) * 0.03])
+fund_b = np.concatenate([rng.normal(0.0003, 0.015, 900), rng.standard_t(4, 100) * 0.025])
+corr = np.array([[1.0, 0.6], [0.6, 1.0]])
+
+# t-copula captures tail dependence that Gaussian copula misses
+simulated = t_copula_mc([fund_a, fund_b], corr, df=4, n_scenarios=50000)
+
+result = joint_tail_probability(simulated, thresholds=[-0.03, -0.03])
+print(f"Joint crash probability: {result['joint_probability']:.4f}")
+print(f"Marginal probabilities:  {result['marginal_probabilities']}")
+```
+
+![Copula Comparison](docs/images/copula_comparison.png)
+
+![Stressed Correlations](docs/images/stressed_correlations.png)
+
+### Regime-Switching Simulation
+
+Paths that switch between calm, volatile, and crisis regimes via a Markov chain.
+
+```python
+import numpy as np
+from quantlite.simulation import (
+    regime_switching_simulation,
+    reverse_stress_test,
+    simulation_summary,
+)
+
+regimes = [
+    {"mu": 0.0004, "sigma": 0.008},   # Calm
+    {"mu": 0.0001, "sigma": 0.020},   # Volatile
+    {"mu": -0.002, "sigma": 0.035},   # Crisis
+]
+transition = np.array([
+    [0.95, 0.04, 0.01],
+    [0.10, 0.80, 0.10],
+    [0.05, 0.15, 0.80],
+])
+
+sim = regime_switching_simulation(regimes, transition, n_steps=252, n_scenarios=5000)
+stats = simulation_summary(sim["returns"])
+print(f"VaR 95%: {stats['var']['95%']:.2%}")
+print(f"CVaR 95%: {stats['cvar']['95%']:.2%}")
+print(f"P(loss > 20%): {stats['probability_of_ruin']['20%']:.2%}")
+```
+
+![Regime Simulation](docs/images/regime_simulation.png)
+
+![Reverse Stress Test](docs/images/reverse_stress_test.png)
+
+See [docs/simulation_evt.md](docs/simulation_evt.md), [docs/simulation_copula.md](docs/simulation_copula.md), and [docs/simulation_regime.md](docs/simulation_regime.md) for the full API reference.
 
 ## v0.8: Factor Models
 

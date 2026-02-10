@@ -6,7 +6,7 @@ portfolio optimisation, multi-asset backtesting, and
 Stephen Few-inspired visualisation.
 """
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 from .backtesting import (
     BacktestConfig,
@@ -79,6 +79,14 @@ __all__ = [
     "crypto",
     # Fat-tail Monte Carlo simulation
     "simulation",
+    # Regime-aware integration
+    "regime_integration",
+    # Dream API (pipeline)
+    "fetch",
+    "detect_regimes",
+    "construct_portfolio",
+    "backtest",
+    "tearsheet",
 ]
 
 from . import (  # noqa: E402
@@ -90,7 +98,15 @@ from . import (  # noqa: E402
     forensics,
     network,
     overfit,
+    regime_integration,
     resample,
     scenarios,
     simulation,
 )
+from .pipeline import (  # noqa: E402
+    backtest,
+    construct_portfolio,
+    detect_regimes,
+    tearsheet,
+)
+from .pipeline import fetch as fetch  # noqa: E402

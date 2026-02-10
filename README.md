@@ -1015,6 +1015,62 @@ print(f"Tail diversification:   {td['tail_diversification']:.3f}")
 | `quantlite.network` | Correlation networks, eigenvector centrality, cascade simulation, community detection |
 | `quantlite.diversification` | Effective Number of Bets, entropy diversification, tail diversification, diversification ratio, Herfindahl index |
 
+## v1.0: The Dream API
+
+QuantLite v1.0 introduces the **Dream API**, a five-function pipeline that chains the entire quant workflow:
+
+```python
+import quantlite as ql
+
+data = ql.fetch(["AAPL", "BTC-USD", "GLD", "TLT"], period="5y")
+regimes = ql.detect_regimes(data, n_regimes=3)
+weights = ql.construct_portfolio(data, regime_aware=True, regimes=regimes)
+result = ql.backtest(data, weights)
+ql.tearsheet(result, regimes=regimes, save="portfolio.txt")
+```
+
+### Regime-Aware Portfolio Construction
+
+Weights automatically tilt defensive during crisis regimes, increasing allocations to bonds and gold while reducing equity exposure:
+
+![Pipeline Equity Curve](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/pipeline_equity_curve.png)
+
+### Regime Risk Analysis
+
+VaR, CVaR, volatility, skewness, and kurtosis computed separately for each market regime:
+
+![Regime Risk Summary](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/regime_risk_summary.png)
+
+### Regime-Filtered Backtesting
+
+Different weight sets applied per regime, with full performance attribution:
+
+![Regime Filtered Backtest](https://raw.githubusercontent.com/prasants/QuantLite/main/docs/images/regime_filtered_backtest.png)
+
+### v1.0 Module Reference
+
+| Module | Description |
+|--------|-------------|
+| `quantlite.pipeline` | Dream API: `fetch`, `detect_regimes`, `construct_portfolio`, `backtest`, `tearsheet` |
+| `quantlite.regime_integration` | Regime-conditional risk, defensive portfolio tilting, filtered backtesting, tearsheets |
+| `quantlite.regimes` | HMM regime detection, Bayesian changepoint detection, conditional metrics |
+| `quantlite.portfolio` | Markowitz, CVaR, risk parity, HRP, Black-Litterman, Kelly optimisation |
+| `quantlite.backtesting` | Multi-asset engine with circuit breakers, slippage, regime-aware signals |
+| `quantlite.risk` | VaR, CVaR, Sortino, Calmar, omega ratio, tail ratio, drawdown analysis |
+| `quantlite.data` | Unified fetching: Yahoo Finance, CCXT, FRED, local files |
+| `quantlite.distributions` | Student-t, stable, GPD, GEV fitting and simulation |
+| `quantlite.simulation` | Fat-tail Monte Carlo: EVT-based, copula-based engines |
+| `quantlite.viz` | Stephen Few-inspired charts: regimes, portfolios, risk dashboards |
+| `quantlite.factors` | Classical factors, custom factors, tail risk factors |
+| `quantlite.ergodicity` | Time-average vs ensemble-average growth, Kelly sizing |
+| `quantlite.antifragile` | Barbell metrics, convexity scores, stress testing |
+| `quantlite.scenarios` | Historical, hypothetical, and Monte Carlo scenario analysis |
+| `quantlite.forensics` | Overfitting detection, data snooping tests, walk-forward analysis |
+| `quantlite.contagion` | CoVaR, Delta CoVaR, MES, Granger causality |
+| `quantlite.network` | Correlation networks, centrality, cascade simulation |
+| `quantlite.diversification` | Effective Number of Bets, entropy, tail diversification |
+| `quantlite.crypto` | On-chain risk, stablecoin depeg, exchange risk scoring |
+
 ## Design Philosophy
 
 1. **Fat tails are the default.** Gaussian assumptions are explicitly opt-in, never implicit.

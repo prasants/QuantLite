@@ -91,11 +91,13 @@ def ergodicity_gap(returns: ArrayLike) -> float:
 def kelly_fraction(returns: ArrayLike, risk_free: float = 0.0) -> float:
     """Compute the optimal Kelly fraction for geometric growth.
 
-    The Kelly criterion maximises the expected logarithmic growth rate.
-    For a simple binary-style approximation from empirical returns,
-    we optimise f to maximise E[log(1 + f * (r - risk_free))].
+    The Kelly criterion maximises the expected logarithmic growth rate:
 
-    Uses a numerical grid search over [0, 2] for robustness.
+        f* = argmax_f  E[log(1 + f * (r - r_f))]
+
+    Uses ``scipy.optimize.minimize_scalar`` with bounded search on
+    [-0.5, 3.0].  Falls back to Brent-bounded optimisation if the
+    primary solve fails.
 
     Parameters
     ----------
@@ -110,24 +112,36 @@ def kelly_fraction(returns: ArrayLike, risk_free: float = 0.0) -> float:
         Optimal fraction of capital to deploy. Can be < 0 (short)
         or > 1 (leveraged).
     """
+    from scipy.optimize import minimize_scalar
+
     r = _to_array(returns)
     excess = r - risk_free
 
-    # Grid search over fractions from -0.5 to 3.0
-    fractions = np.linspace(-0.5, 3.0, 3500)
-    best_f = 0.0
-    best_g = -np.inf
-
-    for f in fractions:
+    def neg_expected_log_growth(f: float) -> float:
         portfolio = 1.0 + f * excess
         if np.any(portfolio <= 0):
-            continue
-        g = np.mean(np.log(portfolio))
-        if g > best_g:
-            best_g = g
-            best_f = f
+            return 1e10  # infeasible
+        return -float(np.mean(np.log(portfolio)))
 
-    return float(round(best_f, 4))
+    bounds = (-0.5, 3.0)
+
+    result = minimize_scalar(
+        neg_expected_log_growth, bounds=bounds, method="bounded",
+        options={"xatol": 1e-8, "maxiter": 500},
+    )
+
+    if result.success:
+        return float(round(result.x, 4))
+
+    # Fallback: try again with Brent in the same interval
+    result2 = minimize_scalar(
+        neg_expected_log_growth, bracket=(-0.5, 0.5, 3.0), method="brent",
+    )
+    if result2.success and bounds[0] <= result2.x <= bounds[1]:
+        return float(round(result2.x, 4))
+
+    # Last resort: return 0 (no bet)
+    return 0.0
 
 
 def leverage_effect(

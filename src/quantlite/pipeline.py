@@ -85,39 +85,63 @@ def detect_regimes(
     method: str = "hmm",
     n_regimes: int = 3,
     rng_seed: int | None = None,
+    signal: str = "mean",
 ) -> np.ndarray:
     """Detect market regimes in a returns DataFrame.
 
     Wraps the HMM regime detection module. For multi-asset DataFrames,
-    uses the mean return across assets as the input signal.
+    the ``signal`` parameter controls how returns are reduced to a
+    univariate series before fitting:
+
+    * ``"mean"`` — arithmetic mean across assets (default).
+    * ``"pca"``  — first principal component, preserving multivariate
+      correlation structure.
+    * ``"min"``  — worst-performing asset each period (most
+      conservative signal).
 
     Args:
         returns_df: DataFrame of simple returns.
         method: Detection method. Currently only ``"hmm"`` is supported.
         n_regimes: Number of regimes to detect.
         rng_seed: Random seed for reproducibility.
+        signal: Signal extraction method: ``"mean"``, ``"pca"``, or
+            ``"min"``.
 
     Returns:
         Array of integer regime labels, same length as *returns_df*.
 
     Raises:
-        ValueError: On unsupported method.
+        ValueError: On unsupported method or signal.
         ImportError: If hmmlearn is not installed.
     """
     if method != "hmm":
         raise ValueError(f"Unsupported method: {method}. Use 'hmm'.")
 
+    if signal not in ("mean", "pca", "min"):
+        raise ValueError(f"Unsupported signal: {signal}. Use 'mean', 'pca', or 'min'.")
+
     from .regimes.hmm import fit_regime_model
 
-    # Use mean return across assets as the signal
     if isinstance(returns_df, pd.DataFrame) and returns_df.shape[1] > 1:
-        signal = returns_df.mean(axis=1)
-    elif isinstance(returns_df, pd.DataFrame):
-        signal = returns_df.iloc[:, 0]
-    else:
-        signal = returns_df
+        if signal == "mean":
+            sig = returns_df.mean(axis=1)
+        elif signal == "pca":
+            from numpy.linalg import eigh
 
-    model = fit_regime_model(signal, n_regimes=n_regimes, rng_seed=rng_seed)
+            centered = returns_df.values - returns_df.values.mean(axis=0)
+            cov = np.cov(centered, rowvar=False)
+            eigenvalues, eigenvectors = eigh(cov)
+            # First PC = eigenvector with largest eigenvalue (last from eigh)
+            pc1 = centered @ eigenvectors[:, -1]
+            sig = pd.Series(pc1, index=returns_df.index)
+        elif signal == "min":
+            sig = returns_df.min(axis=1)
+    elif isinstance(returns_df, pd.DataFrame):
+        sig = returns_df.iloc[:, 0]
+    else:
+        sig = returns_df
+
+    model = fit_regime_model(sig, n_regimes=n_regimes, rng_seed=rng_seed)
     return model.regime_labels
 
 
@@ -169,11 +193,8 @@ def construct_portfolio(
         w = w / w.sum()
         return dict(zip(assets, w.tolist()))
     elif method == "hrp":
-        vols = returns_df.std().values
-        vols = np.where(vols < 1e-10, 1e-10, vols)
-        inv_vol = 1.0 / vols
-        w = inv_vol / inv_vol.sum()
-        return dict(zip(assets, w.tolist()))
+        from .dependency.clustering import hrp_weights
+        return dict(hrp_weights(returns_df))
     else:
         raise ValueError(f"Unknown method: {method}")
 

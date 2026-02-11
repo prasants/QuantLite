@@ -218,44 +218,40 @@ def barbell_allocation(
 def lindy_estimate(age: float, confidence: float = 0.95) -> dict[str, float]:
     """Estimate remaining life expectancy using the Lindy effect.
 
-    For non-perishable entities (ideas, technologies, institutions),
-    expected remaining lifespan is proportional to current age.
+    Models non-perishable entities (ideas, technologies, institutions)
+    with a Pareto survival distribution (alpha = 1).  Under this model:
 
-    Uses a Pareto-like survival model where the expected remaining
-    life equals the current age (for the median estimate).
+        P(T > age + t | T > age) = age / (age + t)
+
+    Key properties:
+
+    * **Expected remaining life** = age (the longer it has survived,
+      the longer we expect it to last).
+    * **Lower bound at confidence level c**: the additional time *t*
+      such that we are *c*-confident the entity survives at least *t*
+      more units.  Solve ``age / (age + t) = 1 - c`` to get
+      ``t = age * c / (1 - c)``.
 
     Parameters
     ----------
     age : float
         Current age of the entity (in any consistent unit).
     confidence : float
-        Confidence level for the survival bound (default 0.95).
+        Confidence level for the survival lower bound (default 0.95).
 
     Returns
     -------
     dict
-        Keys: 'age', 'expected_remaining' (median estimate),
-        'lower_bound' (at given confidence), 'total_expected'.
+        Keys: 'age', 'expected_remaining', 'lower_bound' (at the
+        given confidence), 'total_expected'.
     """
     if age <= 0:
         raise ValueError("age must be positive")
     if not 0 < confidence < 1:
         raise ValueError("confidence must be between 0 and 1")
 
-    # Under Lindy (Pareto with alpha=1), expected remaining life = age
     expected_remaining = age
-
-    # Lower bound: at confidence level, survival beyond this point
-    # P(survive t more) = age / (age + t), so t = age * (1/p - 1)
-    lower_bound = age * (1.0 / (1.0 - confidence) - 1.0) * (1.0 - confidence)
-    # Simplifies to: age * confidence / (1 - confidence) * (1 - confidence) = age * confidence
-    # Actually: P(T > age + t | T > age) = age / (age + t) for Pareto
-    # Set this = 1 - confidence: age/(age+t) = 1 - confidence
-    # t = age * confidence / (1 - confidence)
-    lower_bound = age * (1.0 - confidence) / confidence
-    # That's the point we're confident we'll reach (small value)
-    # More useful: expected remaining at median
-    # P(T > age + t | T > age) = 0.5 => t = age (median remaining = age)
+    lower_bound = age * confidence / (1.0 - confidence)
 
     return {
         "age": age,
@@ -268,11 +264,25 @@ def lindy_estimate(age: float, confidence: float = 0.95) -> dict[str, float]:
 def skin_in_game_score(
     manager_returns: ArrayLike,
     fund_returns: ArrayLike,
+    alignment_weight: float = 0.4,
+    downside_weight: float = 0.4,
+    asymmetry_weight: float = 0.2,
 ) -> dict[str, float]:
     """Measure principal-agent alignment via payoff asymmetry.
 
     Compares the manager's exposure to downside vs upside relative
-    to the fund. A good score means the manager shares the pain.
+    to the fund.  A good score means the manager shares the pain.
+
+    The composite score weights three components:
+
+    * **Alignment** (default 0.4): correlation between manager and fund
+      returns.  Are incentives actually correlated?
+    * **Downside sharing** (default 0.4): when the fund loses, does the
+      manager bleed proportionally?  This matters as much as alignment —
+      asymmetric downside is the hallmark of agency problems.
+    * **Upside asymmetry** (default 0.2): does the manager capture
+      disproportionate upside?  A secondary check — some asymmetry is
+      expected (performance fees), but extreme values signal misalignment.
 
     Parameters
     ----------
@@ -280,6 +290,12 @@ def skin_in_game_score(
         Returns experienced by the manager (compensation-adjusted).
     fund_returns : array-like
         Returns experienced by the fund investors.
+    alignment_weight : float
+        Weight for the alignment (correlation) component (default 0.4).
+    downside_weight : float
+        Weight for the downside-sharing component (default 0.4).
+    asymmetry_weight : float
+        Weight for the upside-asymmetry component (default 0.2).
 
     Returns
     -------
@@ -317,7 +333,11 @@ def skin_in_game_score(
 
     # Composite score: high alignment + high downside sharing + low upside asymmetry = good
     # Normalise to [0, 1] approximately
-    score = (alignment * 0.4) + (min(downside_sharing, 1.0) * 0.4) + (max(0, 1.0 - abs(upside_asymmetry - 1.0)) * 0.2)
+    score = (
+        alignment * alignment_weight
+        + min(downside_sharing, 1.0) * downside_weight
+        + max(0, 1.0 - abs(upside_asymmetry - 1.0)) * asymmetry_weight
+    )
 
     return {
         "alignment": alignment,

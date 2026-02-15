@@ -1,6 +1,6 @@
 # QuantLite
 
-[![PyPI version](https://img.shields.io/pypi/v/quantlite)](https://pypi.org/project/quantlite/)
+[![PyPI version](https://img.shields.io/pypi/v/quantlite?v=1.0.0)](https://pypi.org/project/quantlite/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 

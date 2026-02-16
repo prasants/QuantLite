@@ -273,7 +273,7 @@ print(f"95% CI: [{result['ci_lower']:.2f}, {result['ci_upper']:.2f}]")
 ## Design Philosophy
 
 1. **Fat tails are the default.** Gaussian assumptions are explicitly opt-in, never implicit.
-2. **Typed return values.** Every function returns frozen dataclasses with clear attributes, not opaque dicts.
+2. **Explicit return types.** Every function documents its return type precisely: `float`, `dict` with named keys, or a frozen dataclass with clear attributes.
 3. **Composable modules.** Risk metrics feed into portfolio optimisation which feeds into backtesting. Each layer works independently.
 4. **Honest modelling.** If a method has known limitations (e.g., Gaussian copula has zero tail dependence), the docstring says so.
 5. **Reproducible.** Every stochastic function accepts `rng_seed` for deterministic output.

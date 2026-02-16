@@ -67,7 +67,7 @@ u_data = np.column_stack([rankdata(data[:, j], method="ordinal") / (n + 1) for j
 grid = np.linspace(0.01, 0.99, 40)
 X, Y = np.meshgrid(grid, grid)
 
-for ax, (name, cop) in zip(axes, copulas, strict=False):
+for ax, (name, cop) in zip(axes, copulas):
     cop.fit(data)
     samples = cop.simulate(5000, rng_seed=42)
 
@@ -128,7 +128,7 @@ ax.set_ylabel("Tail dependence coefficient")
 ax.set_title("Tail Dependence by Copula Family")
 ax.legend(fontsize=9)
 
-for i, (ltd, utd) in enumerate(zip(lower_tds, upper_tds, strict=False)):
+for i, (ltd, utd) in enumerate(zip(lower_tds, upper_tds)):
     if ltd > 0.01:
         ax.text(i - w/2, ltd + 0.01, f"{ltd:.2f}", ha="center", fontsize=8, color=FEW_PALETTE["grey_dark"])
     if utd > 0.01:
@@ -151,7 +151,7 @@ showcase = [
     ("Gumbel", GumbelCopula()),
 ]
 
-for ax, (name, cop) in zip(axes, showcase, strict=False):
+for ax, (name, cop) in zip(axes, showcase):
     cop.fit(data)
     samples = cop.simulate(2000, rng_seed=42)
     ax.scatter(samples[:, 0], samples[:, 1], s=4, alpha=0.3, color=FEW_PALETTE["primary"])

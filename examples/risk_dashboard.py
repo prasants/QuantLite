@@ -67,7 +67,7 @@ labels = ["Historical", "Parametric (Gaussian)", "Cornish-Fisher"]
 x = np.arange(len(alphas))
 width = 0.22
 
-for i, (method, colour, label) in enumerate(zip(methods, colours, labels, strict=False)):
+for i, (method, colour, label) in enumerate(zip(methods, colours, labels)):
     vars_ = [value_at_risk(returns, alpha=a, method=method) for a in alphas]
     bars = ax.bar(x + i * width, [-v for v in vars_], width * 0.9, color=colour, alpha=0.8, label=f"{label} VaR")
     # CVaR markers
@@ -187,7 +187,7 @@ metrics = [
     ("Omega", omega, 1.5, [1.0, 2.0, 3.0]),
 ]
 
-for ax, (name, val, target, ranges) in zip(axes, metrics, strict=False):
+for ax, (name, val, target, ranges) in zip(axes, metrics):
     bullet_graph(ax, min(val, max(ranges)), target, ranges, label=name,
                  colour=FEW_PALETTE["primary"])
     ax.text(min(val, max(ranges) * 0.95), 0.35, f"{val:.2f}", fontsize=9,

@@ -96,7 +96,7 @@ for _ in range(3000):
     rand_vols.append(vol)
 
 # Colour by Sharpe
-sharpes = [(r / v if v > 0 else 0) for r, v in zip(rand_rets, rand_vols, strict=False)]
+sharpes = [(r / v if v > 0 else 0) for r, v in zip(rand_rets, rand_vols)]
 sc = ax.scatter(rand_vols, rand_rets, c=sharpes, cmap="Blues", s=6, alpha=0.5, edgecolors="none")
 
 # Individual assets

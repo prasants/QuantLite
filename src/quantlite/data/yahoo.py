@@ -45,6 +45,12 @@ class YahooSource(DataSource):
         ticker = yf.Ticker(symbol)
         df = ticker.history(period=period, interval=interval, **kwargs)
 
+        # yfinance >= 0.2.40 may return MultiIndex columns ((Price, Ticker))
+        # even for single-ticker downloads. Flatten before checking emptiness.
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+            df = df.loc[:, ~df.columns.duplicated()]
+
         if df.empty:
             msg = f"No data returned for symbol {symbol!r}"
             raise ValueError(msg)

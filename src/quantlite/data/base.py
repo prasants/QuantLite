@@ -55,7 +55,14 @@ def standardise_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         Cleaned DataFrame.
     """
-    df.columns = [c.lower().strip() for c in df.columns]
+    # Handle MultiIndex columns (e.g. yfinance >= 0.2.40 returns (Price, Ticker))
+    if isinstance(df.columns, pd.MultiIndex):
+        # Take the first level (Price, Open, High, etc.) and flatten
+        df.columns = [c[0].lower().strip() if isinstance(c, tuple) else str(c).lower().strip() for c in df.columns]
+        # Drop duplicate columns that may result from flattening
+        df = df.loc[:, ~df.columns.duplicated()]
+    else:
+        df.columns = [str(c).lower().strip() for c in df.columns]
     if not isinstance(df.index, pd.DatetimeIndex):
         df.index = pd.to_datetime(df.index, utc=True)
     elif df.index.tz is None:

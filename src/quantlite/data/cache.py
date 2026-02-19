@@ -126,10 +126,13 @@ def cache_put(
     key = _cache_key(source, symbol, params)
     ext = _cache_ext()
     path = cache_dir / f"{key}{ext}"
+    # Strip non-serialisable attrs (e.g. DataMetadata) before caching
+    clean_df = df.copy()
+    clean_df.attrs = {}
     if ext == ".parquet":
-        df.to_parquet(path)
+        clean_df.to_parquet(path)
     else:
-        df.to_csv(path)
+        clean_df.to_csv(path)
     return path
 
 

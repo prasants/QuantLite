@@ -68,12 +68,25 @@ def fetch(
     close_frames = {}
     for ticker, df in result.items():
         if "close" in df.columns:
-            close_frames[ticker] = df["close"]
+            series = df["close"]
         elif "Close" in df.columns:
-            close_frames[ticker] = df["Close"]
+            series = df["Close"]
         else:
-            # Use last column as price
-            close_frames[ticker] = df.iloc[:, -1]
+            series = df.iloc[:, -1]
+
+        # Normalise index to timezone-naive dates for cross-asset alignment.
+        # Equities come back in America/New_York, crypto in UTC, etc.
+        # Without this, the join produces all-NaN rows and dropna() wipes everything.
+        idx = series.index
+        if isinstance(idx, pd.DatetimeIndex) and idx.tz is not None:
+            series = series.copy()
+            series.index = idx.tz_convert("UTC").normalize().tz_localize(None)
+        elif not isinstance(idx, pd.DatetimeIndex):
+            # Cache corruption: index degraded to strings on round-trip
+            series = series.copy()
+            series.index = pd.to_datetime(idx, utc=True).normalize().tz_localize(None)
+
+        close_frames[ticker] = series
 
     prices = pd.DataFrame(close_frames)
     returns = prices.pct_change().dropna()

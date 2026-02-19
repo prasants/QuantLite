@@ -6,7 +6,7 @@ portfolio optimisation, multi-asset backtesting, and
 Stephen Few-inspired visualisation.
 """
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 from .backtesting import (
     BacktestConfig,

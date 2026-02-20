@@ -22,9 +22,9 @@ __all__ = [
 ]
 
 _REGIME_COLOURS = {
-    0: FEW_PALETTE["positive"],   # Calm
-    1: FEW_PALETTE["secondary"],  # Transitional
-    2: FEW_PALETTE["negative"],   # Crisis
+    0: FEW_PALETTE["primary"],    # Calm — muted blue
+    1: FEW_PALETTE["secondary"],  # Transitional — muted orange
+    2: FEW_PALETTE["negative"],   # Crisis — muted red
 }
 
 _REGIME_LABELS = {
@@ -61,14 +61,26 @@ def plot_regime_evolution(
     labels = regime_labels or _REGIME_LABELS
     colours = [_REGIME_COLOURS.get(i, FEW_PALETTE["neutral"]) for i in range(regime_probs.shape[1])]
 
+    # Find peak positions per regime for non-overlapping label placement
     for i in range(regime_probs.shape[1]):
         label = labels.get(i, f"Regime {i}")
         ax.plot(timestamps, regime_probs[:, i], color=colours[i], linewidth=1.4)
-        # Direct label at the end
+
+    # Place direct labels at end of series, staggered vertically
+    end_vals = [(regime_probs[-1, i], i) for i in range(regime_probs.shape[1])]
+    end_vals.sort(key=lambda x: x[0], reverse=True)
+    y_positions = []
+    min_gap = 0.08
+    for val, i in end_vals:
+        y = val
+        for yp in y_positions:
+            if abs(y - yp) < min_gap:
+                y = yp + min_gap if y >= yp else yp - min_gap
+        y_positions.append(y)
+        label = labels.get(i, f"Regime {i}")
         direct_label(
-            ax, timestamps[-1], regime_probs[-1, i],
-            f"  {label}",
-            colour=colours[i],
+            ax, timestamps[-1], y,
+            f"  {label}", colour=colours[i],
         )
 
     ax.set_ylim(-0.05, 1.05)
@@ -127,13 +139,26 @@ def plot_regime_transition_live(
     ax.set_ylabel("Return")
     ax.set_title("Returns with Online Regime Change Points")
 
-    # Add regime labels to the legend area via direct labels
+    # Direct labels — find the longest run of each regime and label there
     unique_regimes = sorted(set(int(r) for r in regimes))
-    for j, r in enumerate(unique_regimes):
+    best_runs: dict[int, tuple[int, int]] = {}  # regime -> (start, length)
+    i = 0
+    while i < len(regimes):
+        r = int(regimes[i])
+        run_start = i
+        while i < len(regimes) and int(regimes[i]) == r:
+            i += 1
+        run_len = i - run_start
+        if r not in best_runs or run_len > best_runs[r][1]:
+            best_runs[r] = (run_start, run_len)
+    y_max = max(returns)
+    for r in unique_regimes:
+        start, length = best_runs[r]
+        mid = start + length // 2
         colour = _REGIME_COLOURS.get(r, FEW_PALETTE["neutral"])
         label = labels.get(r, f"Regime {r}")
-        ax.plot([], [], color=colour, linewidth=6, alpha=0.3, label=label)
-    ax.legend(loc="upper left", frameon=False)
+        direct_label(ax, timestamps[mid], y_max * 0.9, label,
+                     colour=colour, fontsize=9, ha="center")
 
     return fig, ax
 
@@ -169,9 +194,9 @@ def plot_detection_lag(
                  colour=FEW_PALETTE["grey_mid"])
 
     ax.step(timestamps, batch_regimes, where="post",
-            color=FEW_PALETTE["positive"], linewidth=1.4)
+            color=FEW_PALETTE["primary"], linewidth=1.4)
     direct_label(ax, timestamps[-1], float(batch_regimes[-1]) + 0.08, "  Batch",
-                 colour=FEW_PALETTE["positive"])
+                 colour=FEW_PALETTE["primary"])
 
     ax.step(timestamps, online_regimes, where="post",
             color=FEW_PALETTE["secondary"], linewidth=1.4, linestyle="--")

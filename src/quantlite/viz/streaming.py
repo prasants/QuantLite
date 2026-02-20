@@ -62,11 +62,18 @@ def plot_live_feed(
     ax.set_ylabel("Price ($)")
     ax.set_title(f"{symbol} Live Feed")
 
-    # Direct labels instead of legend
-    direct_label(ax, timestamps[-1], prices[-1], f"  {symbol}", colour=FEW_PALETTE["primary"])
+    # Direct labels — offset vertically to avoid overlap
+    price_range = prices.max() - prices.min()
+    label_offset = price_range * 0.04
+    direct_label(
+        ax, timestamps[int(len(timestamps) * 0.75)], prices[int(len(timestamps) * 0.75)] + label_offset,
+        symbol, colour=FEW_PALETTE["primary"], fontsize=10,
+    )
     if bid is not None and ask is not None:
-        mid_spread = (ask[-1] + bid[-1]) / 2
-        direct_label(ax, timestamps[-1], mid_spread, "  Spread", colour=FEW_PALETTE["secondary"])
+        direct_label(
+            ax, timestamps[int(len(timestamps) * 0.45)], bid[int(len(timestamps) * 0.45)] - label_offset,
+            "Bid–ask spread", colour=FEW_PALETTE["secondary"], fontsize=9,
+        )
 
     return fig, ax
 

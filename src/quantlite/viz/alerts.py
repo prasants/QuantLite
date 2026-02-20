@@ -63,8 +63,8 @@ def plot_alert_timeline(
     for idx, atype in zip(alert_indices, alert_types):
         colour = type_colours.get(atype, FEW_PALETTE["negative"])
         label = atype.capitalize() if atype not in plotted_types else None
-        ax.plot(timestamps[idx], prices[idx], "v", color=colour,
-                markersize=8, label=label)
+        ax.axvline(timestamps[idx], color=colour, alpha=0.45, linewidth=1.2,
+                   linestyle="-", label=label)
         plotted_types.add(atype)
 
     ax.set_xlabel("Time")
@@ -111,7 +111,7 @@ def plot_threshold_monitor(
                         alpha=0.15, color=FEW_PALETTE["negative"],
                         interpolate=True)
         direct_label(ax, timestamps[-1], upper_threshold,
-                     f"  Upper: {upper_threshold:.2f}",
+                     f"  Upper: {upper_threshold:.3f}",
                      colour=FEW_PALETTE["negative"])
 
     if lower_threshold is not None:
@@ -122,7 +122,7 @@ def plot_threshold_monitor(
                         alpha=0.15, color=FEW_PALETTE["secondary"],
                         interpolate=True)
         direct_label(ax, timestamps[-1], lower_threshold,
-                     f"  Lower: {lower_threshold:.2f}",
+                     f"  Lower: {lower_threshold:.3f}",
                      colour=FEW_PALETTE["secondary"])
 
     ax.set_xlabel("Time")

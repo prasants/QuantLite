@@ -21,9 +21,11 @@ apply_few_theme()
 
 def chart_live_feed() -> None:
     """Simulated BTC-USD live feed with bid/ask spread."""
+    import pandas as pd
+
     rng = np.random.default_rng(42)
     n = 500
-    timestamps = np.arange(n)
+    timestamps = pd.date_range("2024-03-15 14:00", periods=n, freq="6s")
     # Random walk for price
     returns = rng.normal(0, 0.001, n)
     prices = 42_000 * np.exp(np.cumsum(returns))
@@ -35,6 +37,9 @@ def chart_live_feed() -> None:
     ask = prices + half_spread
 
     fig, ax = plot_live_feed(timestamps, prices, bid, ask, symbol="BTC-USD")
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.xaxis.set_major_locator(mdates.MinuteLocator(interval=10))
     fig.savefig(DOCS_IMAGES / "streaming_live_feed.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ streaming_live_feed.png")

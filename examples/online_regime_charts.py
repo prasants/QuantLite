@@ -50,7 +50,7 @@ def chart_regime_evolution() -> None:
     """Regime posterior probabilities evolving over time."""
     rng = np.random.default_rng(42)
     true_regimes, returns = _simulate_regime_data(300)
-    timestamps = np.arange(len(returns))
+    timestamps = np.arange(len(returns), dtype=float)
 
     # Simulate posterior probabilities (smoothed one-hot with noise)
     probs = np.zeros((len(returns), 3))

@@ -1,0 +1,486 @@
+{
+  "elapsed_seconds": 0.303214042,
+  "comparison": [
+    {
+      "dataset": "sp500",
+      "methods": {
+        "Gaussian VaR (parametric)": {
+          "var": -0.02126724204390541,
+          "cvar": -0.026716685775835684,
+          "violation_rate": 0.049206349206349205,
+          "expected_rate": 0.05
+        },
+        "Historical VaR (scipy baseline)": {
+          "var": -0.019511519496437403,
+          "cvar": -0.0272474215216884,
+          "violation_rate": 0.06111111111111111,
+          "expected_rate": 0.05
+        },
+        "QuantLite EVT VaR (Cornish-Fisher)": {
+          "var": -0.012595969915969129,
+          "cvar": -0.0272474215216884,
+          "violation_rate": 0.1365079365079365,
+          "expected_rate": 0.05
+        }
+      },
+      "var_violations": {
+        "Gaussian VaR (parametric)": 0.049206349206349205,
+        "Historical VaR (scipy baseline)": 0.06111111111111111,
+        "QuantLite EVT VaR (Cornish-Fisher)": 0.1365079365079365
+      },
+      "sharpe_ratios": {},
+      "computation_times": {
+        "Gaussian VaR (parametric)": 0.00018674999999990227,
+        "Historical VaR (scipy baseline)": 0.00010066700000010975,
+        "QuantLite EVT VaR (Cornish-Fisher)": 0.0005571250000000472
+      }
+    },
+    {
+      "dataset": "multi_asset",
+      "methods": {
+        "Gaussian MVO (PyPortfolioOpt-style)": {
+          "sharpe": 0.5801605127135862,
+          "max_drawdown": -0.2416423761122039,
+          "var": -0.012241665571115435,
+          "violation_rate": 0.03888888888888889,
+          "weights": [
+            0.18399076852005158,
+            0.13747252197367776,
+            0.6112083528546844,
+            0.06732835665158625
+          ]
+        },
+        "Basic HRP (PyPortfolioOpt-style)": {
+          "sharpe": 0.5137000190617276,
+          "max_drawdown": -0.15029522461552403,
+          "var": -0.007109562356233384,
+          "violation_rate": 0.051587301587301584,
+          "weights": [
+            0.17613300478262311,
+            0.5609615300958685,
+            0.20288225196537374,
+            0.060023213156134736
+          ]
+        },
+        "Simple Risk Parity (Riskfolio-style)": {
+          "sharpe": 0.5802794325892608,
+          "max_drawdown": -0.19558964550338165,
+          "var": -0.013355627093135617,
+          "violation_rate": 0.05,
+          "weights": [
+            -0.2255688869185685,
+            0.7967857588121874,
+            0.5079738427644245,
+            -0.07919071465804343
+          ]
+        },
+        "QuantLite Tail-Risk Parity": {
+          "sharpe": 0.5140107596757725,
+          "max_drawdown": -0.15248915552465306,
+          "var": -0.007188654115917306,
+          "violation_rate": 0.050793650793650794,
+          "weights": [
+            0.17801158624423583,
+            0.5526923995843226,
+            0.20861885923851956,
+            0.06067715493292193
+          ]
+        }
+      },
+      "var_violations": {
+        "Gaussian MVO (PyPortfolioOpt-style)": 0.03888888888888889,
+        "Basic HRP (PyPortfolioOpt-style)": 0.051587301587301584,
+        "Simple Risk Parity (Riskfolio-style)": 0.05,
+        "QuantLite Tail-Risk Parity": 0.050793650793650794
+      },
+      "sharpe_ratios": {
+        "Gaussian MVO (PyPortfolioOpt-style)": 0.5801605127135862,
+        "Basic HRP (PyPortfolioOpt-style)": 0.5137000190617276,
+        "Simple Risk Parity (Riskfolio-style)": 0.5802794325892608,
+        "QuantLite Tail-Risk Parity": 0.5140107596757725
+      },
+      "computation_times": {
+        "Gaussian MVO (PyPortfolioOpt-style)": 0.00042254200000013675,
+        "Basic HRP (PyPortfolioOpt-style)": 0.00023537499999992662,
+        "Simple Risk Parity (Riskfolio-style)": 0.00041000000000002146,
+        "QuantLite Tail-Risk Parity": 0.0004716249999998645
+      }
+    },
+    {
+      "dataset": "emerging_market",
+      "methods": {
+        "Gaussian VaR (parametric)": {
+          "var": -0.03946999725002037,
+          "cvar": -0.0494528987758695,
+          "violation_rate": 0.03968253968253968,
+          "expected_rate": 0.05
+        },
+        "Historical VaR (scipy baseline)": {
+          "var": -0.037402708188386355,
+          "cvar": -0.05831849158913459,
+          "violation_rate": 0.04047619047619048,
+          "expected_rate": 0.05
+        },
+        "QuantLite EVT VaR (Cornish-Fisher)": {
+          "var": -0.03881366872489873,
+          "cvar": -0.05831849158913459,
+          "violation_rate": 0.04047619047619048,
+          "expected_rate": 0.05
+        }
+      },
+      "var_violations": {
+        "Gaussian VaR (parametric)": 0.03968253968253968,
+        "Historical VaR (scipy baseline)": 0.04047619047619048,
+        "QuantLite EVT VaR (Cornish-Fisher)": 0.04047619047619048
+      },
+      "sharpe_ratios": {},
+      "computation_times": {
+        "Gaussian VaR (parametric)": 7.083299999988135e-05,
+        "Historical VaR (scipy baseline)": 7.09170000001702e-05,
+        "QuantLite EVT VaR (Cornish-Fisher)": 0.0005918339999999578
+      }
+    }
+  ],
+  "crisis": [
+    {
+      "crisis_name": "Global Financial Crisis",
+      "crisis_key": "gfc_2008",
+      "year": 2008,
+      "actual_worst_loss": -0.1343590874529977,
+      "gaussian_var": -0.01837335926938659,
+      "evt_var": -0.01773957720564541,
+      "gaussian_violation_rate": 0.24,
+      "evt_violation_rate": 0.244,
+      "gaussian_pass": false,
+      "evt_pass": false
+    },
+    {
+      "crisis_name": "Taper Tantrum",
+      "crisis_key": "taper_2013",
+      "year": 2013,
+      "actual_worst_loss": -0.035,
+      "gaussian_var": -0.018765606780917026,
+      "evt_var": -0.018466487624948555,
+      "gaussian_violation_rate": 0.06666666666666667,
+      "evt_violation_rate": 0.06666666666666667,
+      "gaussian_pass": true,
+      "evt_pass": true
+    },
+    {
+      "crisis_name": "COVID Crash",
+      "crisis_key": "covid_2020",
+      "year": 2020,
+      "actual_worst_loss": -0.1269244900092387,
+      "gaussian_var": -0.01806057042021771,
+      "evt_var": -0.017552111682754792,
+      "gaussian_violation_rate": 0.4666666666666667,
+      "evt_violation_rate": 0.4666666666666667,
+      "gaussian_pass": false,
+      "evt_pass": false
+    },
+    {
+      "crisis_name": "Crypto Winter",
+      "crisis_key": "crypto_2022",
+      "year": 2022,
+      "actual_worst_loss": -0.15,
+      "gaussian_var": -0.017612076437523452,
+      "evt_var": -0.017916034830424893,
+      "gaussian_violation_rate": 0.4166666666666667,
+      "evt_violation_rate": 0.4166666666666667,
+      "gaussian_pass": false,
+      "evt_pass": false
+    },
+    {
+      "crisis_name": "SVB Collapse",
+      "crisis_key": "svb_2023",
+      "year": 2023,
+      "actual_worst_loss": -0.06,
+      "gaussian_var": -0.017884486266570812,
+      "evt_var": -0.018085333076397935,
+      "gaussian_violation_rate": 0.25,
+      "evt_violation_rate": 0.25,
+      "gaussian_pass": false,
+      "evt_pass": false
+    }
+  ],
+  "speed": [
+    {
+      "operation": "VaR (Cornish-Fisher vs percentile)",
+      "data_size": 100,
+      "quantlite_time": 0.0004311250000001987,
+      "baseline_time": 3.6374999999866375e-05,
+      "speedup": 0.0843722818204688
+    },
+    {
+      "operation": "CVaR (QuantLite vs naive)",
+      "data_size": 100,
+      "quantlite_time": 4.5415999999853796e-05,
+      "baseline_time": 0.00013700000000005375,
+      "speedup": 3.0165580412298483
+    },
+    {
+      "operation": "Full pipeline",
+      "data_size": 100,
+      "quantlite_time": 0.0004900420000000238,
+      "baseline_time": 0.00014091699999996266,
+      "speedup": 0.287561066194236
+    },
+    {
+      "operation": "VaR (Cornish-Fisher vs percentile)",
+      "data_size": 1000,
+      "quantlite_time": 0.00044887500000001523,
+      "baseline_time": 4.695800000020789e-05,
+      "speedup": 0.10461264271836546
+    },
+    {
+      "operation": "CVaR (QuantLite vs naive)",
+      "data_size": 1000,
+      "quantlite_time": 5.504199999983861e-05,
+      "baseline_time": 4.8958000000043356e-05,
+      "speedup": 0.8894662257946097
+    },
+    {
+      "operation": "EVT fitting (GPD vs Gaussian)",
+      "data_size": 1000,
+      "quantlite_time": 0.0071771250000001174,
+      "baseline_time": 6.179199999989393e-05,
+      "speedup": 0.008609575561230008
+    },
+    {
+      "operation": "Full pipeline",
+      "data_size": 1000,
+      "quantlite_time": 0.007236166999999849,
+      "baseline_time": 0.00016412499999995944,
+      "speedup": 0.02268120677700817
+    },
+    {
+      "operation": "VaR (Cornish-Fisher vs percentile)",
+      "data_size": 10000,
+      "quantlite_time": 0.0004982499999999224,
+      "baseline_time": 0.00017808299999999555,
+      "speedup": 0.3574169593577989
+    },
+    {
+      "operation": "CVaR (QuantLite vs naive)",
+      "data_size": 10000,
+      "quantlite_time": 0.00020070800000016042,
+      "baseline_time": 0.00018066699999996771,
+      "speedup": 0.9001484743997414
+    },
+    {
+      "operation": "EVT fitting (GPD vs Gaussian)",
+      "data_size": 10000,
+      "quantlite_time": 0.007032083000000133,
+      "baseline_time": 6.954200000008903e-05,
+      "speedup": 0.009889246187806332
+    },
+    {
+      "operation": "Full pipeline",
+      "data_size": 10000,
+      "quantlite_time": 0.007829832999999953,
+      "baseline_time": 0.0004206669999999857,
+      "speedup": 0.05372617781247547
+    },
+    {
+      "operation": "VaR (Cornish-Fisher vs percentile)",
+      "data_size": 100000,
+      "quantlite_time": 0.001241292000000005,
+      "baseline_time": 0.00156008299999999,
+      "speedup": 1.2568219242531038
+    },
+    {
+      "operation": "CVaR (QuantLite vs naive)",
+      "data_size": 100000,
+      "quantlite_time": 0.0019016670000000513,
+      "baseline_time": 0.0016900420000001137,
+      "speedup": 0.8887160580690879
+    },
+    {
+      "operation": "EVT fitting (GPD vs Gaussian)",
+      "data_size": 100000,
+      "quantlite_time": 0.01766754199999987,
+      "baseline_time": 0.00015883299999996936,
+      "speedup": 0.008990101735712332
+    },
+    {
+      "operation": "Full pipeline",
+      "data_size": 100000,
+      "quantlite_time": 0.01783679199999999,
+      "baseline_time": 0.003361833999999897,
+      "speedup": 0.18847750200820299
+    }
+  ],
+  "summary": [
+    {
+      "category": "VaR Accuracy",
+      "dataset": "sp500",
+      "method": "Gaussian VaR (parametric)",
+      "metric": "violation_rate",
+      "value": 0.049206349206349205,
+      "baseline": 0.05,
+      "improvement_pct": 98.4126984126984
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "sp500",
+      "method": "Historical VaR (scipy baseline)",
+      "metric": "violation_rate",
+      "value": 0.06111111111111111,
+      "baseline": 0.05,
+      "improvement_pct": 77.77777777777779
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "sp500",
+      "method": "QuantLite EVT VaR (Cornish-Fisher)",
+      "metric": "violation_rate",
+      "value": 0.1365079365079365,
+      "baseline": 0.05,
+      "improvement_pct": -73.01587301587298
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "multi_asset",
+      "method": "Gaussian MVO (PyPortfolioOpt-style)",
+      "metric": "violation_rate",
+      "value": 0.03888888888888889,
+      "baseline": 0.05,
+      "improvement_pct": 77.77777777777779
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "multi_asset",
+      "method": "Basic HRP (PyPortfolioOpt-style)",
+      "metric": "violation_rate",
+      "value": 0.051587301587301584,
+      "baseline": 0.05,
+      "improvement_pct": 96.82539682539684
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "multi_asset",
+      "method": "Simple Risk Parity (Riskfolio-style)",
+      "metric": "violation_rate",
+      "value": 0.05,
+      "baseline": 0.05,
+      "improvement_pct": 0.0
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "multi_asset",
+      "method": "QuantLite Tail-Risk Parity",
+      "metric": "violation_rate",
+      "value": 0.050793650793650794,
+      "baseline": 0.05,
+      "improvement_pct": 98.41269841269842
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "emerging_market",
+      "method": "Gaussian VaR (parametric)",
+      "metric": "violation_rate",
+      "value": 0.03968253968253968,
+      "baseline": 0.05,
+      "improvement_pct": 79.36507936507937
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "emerging_market",
+      "method": "Historical VaR (scipy baseline)",
+      "metric": "violation_rate",
+      "value": 0.04047619047619048,
+      "baseline": 0.05,
+      "improvement_pct": 80.95238095238095
+    },
+    {
+      "category": "VaR Accuracy",
+      "dataset": "emerging_market",
+      "method": "QuantLite EVT VaR (Cornish-Fisher)",
+      "metric": "violation_rate",
+      "value": 0.04047619047619048,
+      "baseline": 0.05,
+      "improvement_pct": 80.95238095238095
+    },
+    {
+      "category": "Crisis Performance",
+      "dataset": "gfc_2008",
+      "method": "Gaussian VaR",
+      "metric": "violation_rate",
+      "value": 0.24,
+      "baseline": 0.244,
+      "improvement_pct": -1.6666666666666683
+    },
+    {
+      "category": "Crisis Performance",
+      "dataset": "taper_2013",
+      "method": "Gaussian VaR",
+      "metric": "violation_rate",
+      "value": 0.06666666666666667,
+      "baseline": 0.06666666666666667,
+      "improvement_pct": 0.0
+    },
+    {
+      "category": "Crisis Performance",
+      "dataset": "covid_2020",
+      "method": "Gaussian VaR",
+      "metric": "violation_rate",
+      "value": 0.4666666666666667,
+      "baseline": 0.4666666666666667,
+      "improvement_pct": 0.0
+    },
+    {
+      "category": "Crisis Performance",
+      "dataset": "crypto_2022",
+      "method": "Gaussian VaR",
+      "metric": "violation_rate",
+      "value": 0.4166666666666667,
+      "baseline": 0.4166666666666667,
+      "improvement_pct": 0.0
+    },
+    {
+      "category": "Crisis Performance",
+      "dataset": "svb_2023",
+      "method": "Gaussian VaR",
+      "metric": "violation_rate",
+      "value": 0.25,
+      "baseline": 0.25,
+      "improvement_pct": 0.0
+    },
+    {
+      "category": "Speed",
+      "dataset": "10K observations",
+      "method": "VaR (Cornish-Fisher vs percentile)",
+      "metric": "speedup",
+      "value": 0.3574169593577989,
+      "baseline": 1.0,
+      "improvement_pct": -64.25830406422011
+    },
+    {
+      "category": "Speed",
+      "dataset": "10K observations",
+      "method": "CVaR (QuantLite vs naive)",
+      "metric": "speedup",
+      "value": 0.9001484743997414,
+      "baseline": 1.0,
+      "improvement_pct": -9.985152560025856
+    },
+    {
+      "category": "Speed",
+      "dataset": "10K observations",
+      "method": "EVT fitting (GPD vs Gaussian)",
+      "metric": "speedup",
+      "value": 0.009889246187806332,
+      "baseline": 1.0,
+      "improvement_pct": -99.01107538121937
+    },
+    {
+      "category": "Speed",
+      "dataset": "10K observations",
+      "method": "Full pipeline",
+      "metric": "speedup",
+      "value": 0.05372617781247547,
+      "baseline": 1.0,
+      "improvement_pct": -94.62738221875246
+    }
+  ]
+}

@@ -118,5 +118,9 @@ nav:
   - Visualisation:
     - Matplotlib Charts: visualisation.md
     - Interactive Plotly: interactive_viz.md
+  - Benchmarks:
+    - Overview: benchmarks.md
+    - Tail Event Analysis: tail_event_analysis.md
+    - Performance: performance.md
   - Architecture & Contributing: architecture.md
   - API Reference: api.md

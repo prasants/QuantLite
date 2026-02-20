@@ -6,7 +6,7 @@ portfolio optimisation, multi-asset backtesting, and
 Stephen Few-inspired visualisation.
 """
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 from .backtesting import (
     BacktestConfig,
@@ -118,3 +118,6 @@ from .regimes.online import OnlineRegimeDetector, RegimeUpdate  # noqa: E402
 
 # Convenience alias
 stream = create_stream
+
+# v1.5: Benchmarking suite
+from . import benchmark  # noqa: E402

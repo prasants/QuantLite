@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
@@ -50,7 +51,7 @@ def chart_regime_evolution() -> None:
     """Regime posterior probabilities evolving over time."""
     rng = np.random.default_rng(42)
     true_regimes, returns = _simulate_regime_data(300)
-    timestamps = np.arange(len(returns), dtype=float)
+    timestamps = pd.date_range("2024-01-01", periods=len(returns), freq="1d")
 
     # Simulate posterior probabilities (smoothed one-hot with noise)
     probs = np.zeros((len(returns), 3))
@@ -70,6 +71,9 @@ def chart_regime_evolution() -> None:
     probs /= probs.sum(axis=1, keepdims=True)
 
     fig, ax = plot_regime_evolution(timestamps, probs)
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     fig.savefig(DOCS_IMAGES / "online_regime_evolution.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ online_regime_evolution.png")
@@ -78,9 +82,12 @@ def chart_regime_evolution() -> None:
 def chart_regime_transition_live() -> None:
     """Return series with regime background shading and change points."""
     true_regimes, returns = _simulate_regime_data(400, seed=77)
-    timestamps = np.arange(len(returns))
+    timestamps = pd.date_range("2024-01-01", periods=len(returns), freq="1d")
 
     fig, ax = plot_regime_transition_live(timestamps, returns, true_regimes)
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     fig.savefig(DOCS_IMAGES / "online_regime_transitions.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ online_regime_transitions.png")
@@ -89,7 +96,7 @@ def chart_regime_transition_live() -> None:
 def chart_detection_lag() -> None:
     """Online vs batch regime detection comparison."""
     true_regimes, returns = _simulate_regime_data(300, seed=55)
-    timestamps = np.arange(len(returns))
+    timestamps = pd.date_range("2024-01-01", periods=len(returns), freq="1d")
 
     # Batch detects perfectly (same as truth)
     batch = true_regimes.copy()
@@ -104,6 +111,9 @@ def chart_detection_lag() -> None:
         online[t:end] = true_regimes[t - 1]  # Keeps old regime during lag
 
     fig, ax = plot_detection_lag(timestamps, true_regimes, online, batch)
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     fig.savefig(DOCS_IMAGES / "online_detection_lag.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ online_detection_lag.png")

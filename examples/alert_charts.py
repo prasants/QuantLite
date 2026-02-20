@@ -7,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
@@ -28,7 +29,7 @@ def chart_alert_timeline() -> None:
     returns[150:170] = rng.normal(-0.02, 0.025, 20)
     returns[250:260] = rng.normal(0.015, 0.02, 10)
     prices = 43_000 * np.exp(np.cumsum(returns))
-    timestamps = np.arange(n)
+    timestamps = pd.date_range("2024-03-01", periods=n, freq="4h")
 
     # Alerts at large moves
     alert_indices = []
@@ -47,6 +48,9 @@ def chart_alert_timeline() -> None:
         np.array(alert_indices), alert_types,
         symbol="BTC-USD",
     )
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=7))
     fig.savefig(DOCS_IMAGES / "alert_timeline.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ alert_timeline.png")
@@ -61,7 +65,7 @@ def chart_threshold_monitor() -> None:
     returns[100:140] = rng.normal(0, 0.035, 40)
     # Rolling 20-day volatility
     vol = np.array([np.std(returns[max(0, i - 20):i + 1]) for i in range(n)])
-    timestamps = np.arange(n)
+    timestamps = pd.date_range("2024-03-01", periods=n, freq="1d")
 
     fig, ax = plot_threshold_monitor(
         timestamps, vol,
@@ -69,6 +73,9 @@ def chart_threshold_monitor() -> None:
         lower_threshold=0.005,
         metric_name="20-day Rolling Volatility",
     )
+    import matplotlib.dates as mdates
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
     fig.savefig(DOCS_IMAGES / "alert_threshold_monitor.png", bbox_inches="tight")
     plt.close(fig)
     print("✓ alert_threshold_monitor.png")

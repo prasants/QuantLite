@@ -353,17 +353,31 @@ def plot_kelly_drawdown_control(
     apply_few_theme()
     fig, ax = plt.subplots(figsize=(12, 6))
 
+    # Collect end values for staggered label placement
+    end_values = []
     for i, (name, equity) in enumerate(equity_curves.items()):
         colour = _COLOURS[i % len(_COLOURS)]
         ax.plot(equity, color=colour, linewidth=1.5)
-        # Direct label at end
-        ax.text(len(equity) - 1, equity[-1], f"  {name}",
+        end_values.append((equity[-1], name, colour, len(equity) - 1))
+
+    # Stagger labels so they don't overlap
+    end_values.sort(key=lambda x: x[0])
+    min_gap = (max(v[0] for v in end_values) - min(v[0] for v in end_values)) * 0.05
+    if min_gap < 0.01:
+        min_gap = 0.05
+    placed: list[float] = []
+    for val, name, colour, x_pos in end_values:
+        y = val
+        for yp in placed:
+            if abs(y - yp) < min_gap:
+                y = yp + min_gap
+        placed.append(y)
+        ax.text(x_pos, y, f"  {name}",
                 color=colour, fontsize=10, va="center")
 
     ax.set_xlabel("Period")
-    ax.set_ylabel("Portfolio Value")
+    ax.set_ylabel("Portfolio Value ($)")
     ax.set_title(title)
-    ax.set_yscale("log")
 
     return _save_or_show(fig, save_path)
 
@@ -469,10 +483,16 @@ def plot_ensemble_agreement(
         Matplotlib Figure.
     """
     apply_few_theme()
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
     n = len(agreement_matrix)
-    im = ax.imshow(agreement_matrix.values, cmap="RdYlGn", vmin=-1, vmax=1, aspect="auto")
+    # Custom diverging colourmap using Few palette (blue-white-orange)
+    from matplotlib.colors import LinearSegmentedColormap
+    _few_div = LinearSegmentedColormap.from_list(
+        "few_div",
+        [FEW_PALETTE["primary"], "#FFFFFF", FEW_PALETTE["secondary"]],
+    )
+    im = ax.imshow(agreement_matrix.values, cmap=_few_div, vmin=-1, vmax=1, aspect="auto")
 
     ax.set_xticks(range(n))
     ax.set_yticks(range(n))

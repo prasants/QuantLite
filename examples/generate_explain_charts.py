@@ -70,8 +70,18 @@ def main():
         returns_df, weights, regime_labels=regime_labels
     )
 
+    # Use standalone (undiversified) CVaRs for the waterfall so the
+    # diversification benefit is visible as a negative bar.
+    standalone_cvar = {}
+    for name in returns_df.columns:
+        w = weights.get(name, 0.0)
+        asset_ret = returns_df[name].values * w
+        threshold = np.percentile(asset_ret, 5)
+        tail = asset_ret[asset_ret <= threshold]
+        standalone_cvar[name] = -float(np.mean(tail))
+
     plot_risk_waterfall(
-        attr.component_cvar, attr.total_cvar,
+        standalone_cvar, attr.total_cvar,
         save_path=os.path.join(IMG_DIR, "risk_waterfall.png"),
     )
     print("  -> risk_waterfall.png")
@@ -100,11 +110,21 @@ def main():
     )
     print("  -> regime_summary.png")
 
+    # Rename regime labels for readability
+    regime_names = {"0": "Calm", "1": "Transitional", "2": "Crisis"}
+    tm = narrative.transition_matrix.rename(index=regime_names, columns=regime_names)
+
     plot_regime_transition_matrix(
-        narrative.transition_matrix,
+        tm,
         save_path=os.path.join(IMG_DIR, "regime_transitions.png"),
     )
     print("  -> regime_transitions.png")
+
+    plot_regime_transition_matrix(
+        tm,
+        save_path=os.path.join(IMG_DIR, "regime_transition_heatmap.png"),
+    )
+    print("  -> regime_transition_heatmap.png")
 
     # --- What-If Analysis ---
     print("Generating what-if charts...")

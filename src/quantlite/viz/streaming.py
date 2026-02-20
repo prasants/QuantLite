@@ -149,13 +149,13 @@ def plot_stream_latency(
     ax.hist(
         latencies_ms,
         bins=60,
-        color=FEW_PALETTE["neutral"],
+        color=FEW_PALETTE["primary"],
         edgecolor=FEW_PALETTE["bg"],
         linewidth=0.5,
         alpha=0.85,
     )
 
-    colours = [FEW_PALETTE["positive"], FEW_PALETTE["secondary"], FEW_PALETTE["negative"]]
+    colours = [FEW_PALETTE["primary"], FEW_PALETTE["secondary"], FEW_PALETTE["negative"]]
     for i, p in enumerate(percentiles):
         val = float(np.percentile(latencies_ms, p))
         c = colours[i % len(colours)]

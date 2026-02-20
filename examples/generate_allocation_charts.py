@@ -13,33 +13,38 @@ from scipy import stats
 # Ensure src is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from quantlite.portfolio.tail_risk_parity import (
-    cvar_parity_weights, vol_parity_weights, es_parity_weights, compare_parity_methods,
-)
-from quantlite.portfolio.regime_bl import regime_conditional_bl, black_litterman_posterior
+import matplotlib
+
 from quantlite.portfolio.dynamic_kelly import (
-    fractional_kelly, rolling_kelly, kelly_with_drawdown_control,
+    fractional_kelly,
+    kelly_with_drawdown_control,
+    rolling_kelly,
 )
-from quantlite.portfolio.ensemble import ensemble_allocate, consensus_portfolio
-from quantlite.portfolio.walkforward import walk_forward, sharpe_score
+from quantlite.portfolio.ensemble import ensemble_allocate
 from quantlite.portfolio.optimisation import risk_parity_weights
+from quantlite.portfolio.regime_bl import regime_conditional_bl
+from quantlite.portfolio.tail_risk_parity import (
+    cvar_parity_weights,
+    es_parity_weights,
+    vol_parity_weights,
+)
+from quantlite.portfolio.walkforward import walk_forward
 from quantlite.viz.allocation import (
-    plot_risk_contribution_comparison,
-    plot_tail_parity_weights,
-    plot_tail_risk_budget,
-    plot_regime_bl_weights,
-    plot_view_confidence,
     plot_bl_frontier,
+    plot_ensemble_agreement,
+    plot_ensemble_weights,
     plot_kelly_drawdown_control,
     plot_kelly_fraction_evolution,
     plot_kelly_risk_reward,
-    plot_ensemble_agreement,
-    plot_ensemble_weights,
-    plot_walkforward_folds,
+    plot_regime_bl_weights,
+    plot_risk_contribution_comparison,
+    plot_tail_parity_weights,
+    plot_tail_risk_budget,
+    plot_view_confidence,
     plot_walkforward_equity,
+    plot_walkforward_folds,
 )
 
-import matplotlib
 matplotlib.use("Agg")
 
 IMG_DIR = os.path.join(os.path.dirname(__file__), "..", "docs", "images")
@@ -174,7 +179,7 @@ def main():
 
     print("Generating ensemble charts...")
     # Ensemble — use 4+ strategies for an informative agreement matrix
-    from quantlite.portfolio.optimisation import hrp_weights, black_litterman
+    from quantlite.portfolio.optimisation import black_litterman, hrp_weights
 
     hrp = hrp_weights(returns_df)
     rp = risk_parity_weights(returns_df)
@@ -190,7 +195,7 @@ def main():
                   for c in returns_df.columns}
 
     # Kelly (fractional)
-    kelly_res = fractional_kelly(returns_df.mean(axis=1).values, fraction_of_kelly=0.5)
+    fractional_kelly(returns_df.mean(axis=1).values, fraction_of_kelly=0.5)
     # Distribute Kelly across assets by Sharpe
     sharpes = returns_df.mean() / returns_df.std()
     sharpes_pos = sharpes.clip(lower=0)

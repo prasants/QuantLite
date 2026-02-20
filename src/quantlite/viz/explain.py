@@ -361,12 +361,17 @@ def plot_regime_transition_matrix(
     Returns:
         Matplotlib Figure.
     """
-    fig, ax = few_figure(figsize=(8, 6))
+    fig, ax = few_figure(figsize=(10, 8))
 
     data = transition_matrix.values
     n = data.shape[0]
 
-    ax.imshow(data, cmap="Blues", vmin=0, vmax=1, aspect="auto")
+    # Custom colourmap from white to Few primary blue
+    from matplotlib.colors import LinearSegmentedColormap
+    _few_seq = LinearSegmentedColormap.from_list(
+        "few_seq", ["#FFFFFF", FEW_PALETTE["primary"]], N=256,
+    )
+    ax.imshow(data, cmap=_few_seq, vmin=0, vmax=1, aspect="auto")
 
     # Annotate cells
     for i in range(n):

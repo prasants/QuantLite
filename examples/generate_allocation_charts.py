@@ -173,8 +173,38 @@ def main():
     )
 
     print("Generating ensemble charts...")
-    # Ensemble
-    ens = ensemble_allocate(returns_df)
+    # Ensemble — use 4+ strategies for an informative agreement matrix
+    from quantlite.portfolio.optimisation import hrp_weights, black_litterman
+
+    hrp = hrp_weights(returns_df)
+    rp = risk_parity_weights(returns_df)
+
+    # Black-Litterman
+    caps = {c: 1e9 for c in returns_df.columns}
+    views = {returns_df.columns[0]: 0.08, returns_df.columns[-1]: 0.12}
+    confs = {returns_df.columns[0]: 0.7, returns_df.columns[-1]: 0.5}
+    bl_posterior, _ = black_litterman(returns_df, caps, views, confs)
+    bl_w_raw = bl_posterior.clip(lower=0)
+    bl_total = bl_w_raw.sum()
+    bl_weights = {c: float(bl_w_raw[c] / bl_total) if bl_total > 0 else 0.25
+                  for c in returns_df.columns}
+
+    # Kelly (fractional)
+    kelly_res = fractional_kelly(returns_df.mean(axis=1).values, fraction_of_kelly=0.5)
+    # Distribute Kelly across assets by Sharpe
+    sharpes = returns_df.mean() / returns_df.std()
+    sharpes_pos = sharpes.clip(lower=0)
+    s_total = sharpes_pos.sum()
+    kelly_weights = {c: float(sharpes_pos[c] / s_total) if s_total > 0 else 0.25
+                     for c in returns_df.columns}
+
+    strategies_4 = {
+        "HRP": hrp.weights,
+        "Risk Parity": rp.weights,
+        "Black-Litterman": bl_weights,
+        "Kelly": kelly_weights,
+    }
+    ens = ensemble_allocate(returns_df, strategies=strategies_4)
     plot_ensemble_agreement(
         ens.agreement_matrix,
         save_path=os.path.join(IMG_DIR, "ensemble_agreement.png"),

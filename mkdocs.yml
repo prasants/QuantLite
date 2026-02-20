@@ -110,6 +110,11 @@ nav:
     - Price Streaming: streaming.md
     - Online Regime Detection: online_regimes.md
     - Alerts: alerts.md
+  - Explainability:
+    - Risk Attribution: risk_attribution.md
+    - Regime Narratives: regime_narratives.md
+    - Decision Audit Trail: decision_audit.md
+    - What-If Analysis: whatif_analysis.md
   - Visualisation:
     - Matplotlib Charts: visualisation.md
     - Interactive Plotly: interactive_viz.md

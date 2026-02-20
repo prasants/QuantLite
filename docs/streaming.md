@@ -250,13 +250,22 @@ Throttling prevents downstream systems from being overwhelmed by high-frequency 
 - `throttle_ms=1000`: at most 1 tick per second per symbol (suitable for regime detection)
 - `throttle_ms=0`: no throttling (every tick is dispatched)
 
-## Visualisation Concept
+## Visualisation
 
-A typical monitoring dashboard built on QuantLite streaming would display:
+### Live Price Feed
 
-- **Real-time price chart** with a rolling 1-hour window, updating on each tick
-- **Bid-ask spread panel** showing spread evolution (useful for detecting liquidity deterioration)
-- **Tick rate indicator** showing ticks per second, coloured by throttle status
-- **Multi-exchange price comparison** overlaying the same symbol from different venues to spot arbitrage opportunities
+A simulated live feed showing price movement with bid/ask spread shading. The spread widens during volatile periods, providing a visual indicator of liquidity conditions.
 
-These can be built with Plotly Dash or a similar framework, consuming ticks from `PriceStream` callbacks.
+![BTC-USD Live Feed with Bid-Ask Spread Shading](images/streaming_live_feed.png)
+
+### Tick Arrival Density
+
+The distribution of inter-arrival times reveals market microstructure: tight clustering indicates bursts of activity, while the long tail captures quiet periods.
+
+![ETH-USD Tick Arrival Density Histogram](images/streaming_tick_density.png)
+
+### Stream Latency
+
+Latency distribution with percentile markers (p50, p95, p99) for monitoring feed health. A rightward shift in the distribution signals degradation.
+
+![Stream Feed Latency Distribution with Percentile Markers](images/streaming_latency.png)

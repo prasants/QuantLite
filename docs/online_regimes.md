@@ -275,11 +275,22 @@ This means:
 
 For intraday data, consider a smaller window (e.g., 100-500 ticks). For daily data, the default of 252 (one trading year) works well.
 
-## Visualisation Concept
+## Visualisation
 
-A regime monitoring dashboard would display:
+### Regime Evolution
 
-- **Price chart with regime overlay**: price as a line chart with background colour bands indicating the current regime (e.g., green for calm, amber for transitional, red for crisis)
-- **Confidence gauge**: a real-time bar or dial showing the posterior confidence of the current regime classification
-- **Regime transition heatmap**: a matrix showing the empirical transition probabilities between regimes over the monitoring period
-- **Rolling regime duration**: how long the market has been in the current regime, with historical averages for comparison
+Posterior probabilities for each regime evolving as new observations arrive. Confidence bands make it clear when the classifier is uncertain.
+
+![Regime Evolution: Online Posterior Probabilities Over Time](images/online_regime_evolution.png)
+
+### Regime Transitions
+
+Returns plotted with background colour bands indicating the active regime. Vertical markers highlight transition points where the detector identifies a regime change.
+
+![Returns with Online Regime Change Points](images/online_regime_transitions.png)
+
+### Detection Lag
+
+Comparison of online vs batch regime detection against ground truth. The online detector lags behind batch by several observations at each transition, a trade-off for bounded memory and real-time operation.
+
+![Online vs Batch Regime Detection Lag](images/online_detection_lag.png)

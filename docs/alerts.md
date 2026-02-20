@@ -383,11 +383,22 @@ Recommended cooldowns:
 | Regime change (intraday)       | 300 seconds      |
 | Critical threshold breach      | 60 seconds       |
 
-## Visualisation Concept
+## Visualisation
 
-An alert monitoring panel would display:
+### Alert Timeline
 
-- **Alert timeline**: a horizontal timeline with markers for each fired alert, colour-coded by severity (threshold breach vs. regime change)
-- **Active rules dashboard**: a table of all configured rules with their current status, last fired time, and cooldown countdown
-- **Alert frequency chart**: a bar chart showing alerts per hour/day, useful for spotting periods of market stress
-- **Rule hit rate**: percentage of checks that resulted in an alert for each rule, helping to tune thresholds
+Price series with alert trigger points marked as downward triangles, colour-coded by type. Regime-change alerts (amber) and threshold-breach alerts (red) are visually distinct.
+
+![BTC-USD Price with Alert Triggers](images/alert_timeline.png)
+
+### Threshold Monitor
+
+A monitored metric (here, 20-day rolling volatility) plotted against upper and lower thresholds. Shaded zones highlight periods where the metric breaches the alert boundary.
+
+![Rolling Volatility Threshold Monitor with Alert Zones](images/alert_threshold_monitor.png)
+
+### Alert History
+
+Stacked bar chart showing the frequency and type breakdown of alerts over a 14-day period. The spike in days 7-9 corresponds to a market stress episode.
+
+![Alert History by Type Over 14 Days](images/alert_history.png)

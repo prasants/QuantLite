@@ -1,0 +1,111 @@
+site_name: QuantLite
+site_description: A fat-tail-native quantitative finance toolkit
+site_url: https://prasants.github.io/QuantLite/
+repo_url: https://github.com/prasants/QuantLite
+repo_name: prasants/QuantLite
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            heading_level: 3
+            docstring_style: google
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation & First Steps: getting-started.md
+    - Quickstart (10 minutes): quickstart.md
+    - The Dream API: pipeline.md
+  - Core:
+    - Risk Metrics: risk.md
+    - Fat-Tailed Distributions: data.md
+    - Extreme Value Theory: simulation_evt.md
+    - Copulas: copulas.md
+    - Regime Detection: regimes.md
+  - Portfolio:
+    - Optimisation: portfolio.md
+    - Rebalancing: portfolio.md
+    - Backtesting: portfolio.md
+  - Taleb Stack:
+    - Ergodicity Economics: ergodicity.md
+    - Antifragility: antifragility.md
+    - Scenario Analysis: scenarios.md
+  - Honest Backtesting:
+    - Strategy Forensics: forensics.md
+    - Overfitting Detection: overfitting.md
+    - Resampled Backtesting: resampling.md
+  - Systemic Risk:
+    - Contagion Metrics: contagion.md
+    - Network Risk: network.md
+    - Diversification Analysis: diversification.md
+  - Crypto:
+    - Stablecoin Risk: stablecoin_risk.md
+    - Exchange Risk: exchange_risk.md
+    - On-Chain Analytics: onchain_risk.md
+  - Factors:
+    - Classical Factors: factors_classical.md
+    - Custom Factors: factors_custom.md
+    - Tail Risk Factors: factors_tail_risk.md
+  - Simulation:
+    - EVT Simulation: simulation_evt.md
+    - Copula Monte Carlo: simulation_copula.md
+    - Regime Monte Carlo: simulation_regime.md
+  - Regime Integration:
+    - Risk Integration: regime_integration.md
+    - Portfolio Integration: regime_integration.md
+    - Reporting: reports.md
+    - Full Pipeline: pipeline.md
+  - Live & Streaming:
+    - Price Streaming: streaming.md
+    - Online Regime Detection: online_regimes.md
+    - Alerts: alerts.md
+  - Visualisation:
+    - Matplotlib Charts: visualisation.md
+    - Interactive Plotly: interactive_viz.md
+  - Architecture & Contributing: architecture.md
+  - API Reference: api.md

@@ -28,3 +28,4 @@ pip-delete-this-directory.txt
 .vscode/
 *.swp
 .idea/
+site/

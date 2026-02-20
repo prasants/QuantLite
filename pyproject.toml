@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "quantlite"
-version = "1.1.0"
+version = "1.2.0"
 description = "A fat-tail-native quantitative finance toolkit: EVT, risk metrics, and honest modelling for markets that bite."
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
@@ -54,11 +54,19 @@ plotly = ["plotly>=5.0", "kaleido>=0.2"]
 report = ["plotly>=5.0", "kaleido>=0.2"]
 pdf = ["weasyprint>=60"]
 all = ["yfinance>=0.2", "ccxt>=4.0", "fredapi>=0.5", "plotly>=5.0", "kaleido>=0.2", "weasyprint>=60", "hmmlearn>=0.3"]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
 dev = [
     "pytest>=7.0",
     "ruff>=0.4",
     "mypy>=1.8",
     "pandas-stubs",
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
 ]
 
 [project.urls]

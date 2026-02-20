@@ -6,7 +6,7 @@ portfolio optimisation, multi-asset backtesting, and
 Stephen Few-inspired visualisation.
 """
 
-__version__ = "1.0.2"
+__version__ = "1.1.0"
 
 from .backtesting import (
     BacktestConfig,
@@ -110,3 +110,11 @@ from .pipeline import (  # noqa: E402
     tearsheet,
 )
 from .pipeline import fetch as fetch  # noqa: E402
+
+# v1.1: Streaming, online regimes, alerts
+from .alerts import AlertManager, AlertRule, Alert  # noqa: E402
+from .data.stream import PriceStream, PriceTick, create_stream  # noqa: E402
+from .regimes.online import OnlineRegimeDetector, RegimeUpdate  # noqa: E402
+
+# Convenience alias
+stream = create_stream

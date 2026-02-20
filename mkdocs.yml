@@ -71,6 +71,12 @@ nav:
     - Optimisation: portfolio.md
     - Rebalancing: portfolio.md
     - Backtesting: portfolio.md
+  - Allocation Engine:
+    - Tail-Risk Parity: tail_risk_parity.md
+    - Regime Black-Litterman: regime_black_litterman.md
+    - Dynamic Kelly: dynamic_kelly.md
+    - Ensemble Allocators: ensemble_allocators.md
+    - Walk-Forward Optimisation: walkforward.md
   - Taleb Stack:
     - Ergodicity Economics: ergodicity.md
     - Antifragility: antifragility.md

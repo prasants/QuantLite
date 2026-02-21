@@ -87,6 +87,17 @@ __all__ = [
     "construct_portfolio",
     "backtest",
     "tearsheet",
+    # Streaming & alerts (v1.1)
+    "AlertManager",
+    "AlertRule",
+    "Alert",
+    "PriceStream",
+    "PriceTick",
+    "create_stream",
+    "OnlineRegimeDetector",
+    "RegimeUpdate",
+    # Benchmarking (v1.5)
+    "benchmark",
 ]
 
 from . import (  # noqa: E402
@@ -103,6 +114,10 @@ from . import (  # noqa: E402
     scenarios,
     simulation,
 )
+
+# v1.1: Streaming, online regimes, alerts
+from .alerts import Alert, AlertManager, AlertRule  # noqa: E402
+from .data.stream import PriceStream, PriceTick, create_stream  # noqa: E402
 from .pipeline import (  # noqa: E402
     backtest,
     construct_portfolio,
@@ -110,10 +125,6 @@ from .pipeline import (  # noqa: E402
     tearsheet,
 )
 from .pipeline import fetch as fetch  # noqa: E402
-
-# v1.1: Streaming, online regimes, alerts
-from .alerts import AlertManager, AlertRule, Alert  # noqa: E402
-from .data.stream import PriceStream, PriceTick, create_stream  # noqa: E402
 from .regimes.online import OnlineRegimeDetector, RegimeUpdate  # noqa: E402
 
 # Convenience alias

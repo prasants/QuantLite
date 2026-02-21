@@ -262,19 +262,26 @@ def plot_crisis_var_comparison(
     fig, ax = plt.subplots(figsize=figsize, dpi=150)
     _apply_theme(ax)
 
-    names = [r.crisis_name for r in results]
+    _SHORT = {
+        "Global Financial Crisis": "GFC",
+        "Taper Tantrum": "Taper",
+        "COVID Crash": "COVID",
+        "Crypto Winter": "Crypto",
+        "SVB Collapse": "SVB",
+    }
+    short_names = [_SHORT.get(r.crisis_name, r.crisis_name[:8]) for r in results]
     gaussian = [abs(r.gaussian_var) for r in results]
     evt = [abs(r.evt_var) for r in results]
     actual = [abs(r.actual_worst_loss) for r in results]
 
-    x = np.arange(len(names))
+    x = np.arange(len(short_names))
     w = 0.25
 
     ax.bar(x - w, gaussian, w, color=NEGATIVE, label="Gaussian VaR", edgecolor="none")
     ax.bar(x, evt, w, color=POSITIVE, label="EVT VaR", edgecolor="none")
     ax.bar(x + w, actual, w, color=PRIMARY, label="Actual worst loss", edgecolor="none")
 
-    for i in range(len(names)):
+    for i in range(len(short_names)):
         _direct_label(ax, i - w, gaussian[i] + 0.002, f"{gaussian[i]:.1%}",
                       colour=NEGATIVE, fontsize=7)
         _direct_label(ax, i, evt[i] + 0.002, f"{evt[i]:.1%}",
@@ -283,8 +290,10 @@ def plot_crisis_var_comparison(
                       colour=PRIMARY, fontsize=7)
 
     ax.set_xticks(x)
-    ax.set_xticklabels([f"{n}\n({r.year})" for n, r in zip(names, results)],
-                       fontsize=8)
+    ax.set_xticklabels(
+        [f"{n}\n({r.year})" for n, r in zip(short_names, results)],
+        fontsize=8,
+    )
     ax.set_ylabel("Loss Magnitude", fontsize=10, color=TEXT_GREY)
     ax.set_title("Crisis Performance: Predicted VaR vs Actual Worst Loss",
                  fontsize=13, color=TEXT_GREY, fontweight="bold", pad=15)
@@ -558,7 +567,17 @@ def plot_benchmark_summary(
     ax = axes[1, 0]
     _apply_theme(ax)
     if crisis_results:
-        names = [f"{r.crisis_name[:12]}\n{r.year}" for r in crisis_results]
+        _SHORT_NAMES = {
+            "Global Financial Crisis": "GFC",
+            "Taper Tantrum": "Taper",
+            "COVID Crash": "COVID",
+            "Crypto Winter": "Crypto",
+            "SVB Collapse": "SVB",
+        }
+        names = [
+            f"{_SHORT_NAMES.get(r.crisis_name, r.crisis_name[:8])}\n{r.year}"
+            for r in crisis_results
+        ]
         g_rates = [r.gaussian_violation_rate for r in crisis_results]
         e_rates = [r.evt_violation_rate for r in crisis_results]
         x = np.arange(len(names))

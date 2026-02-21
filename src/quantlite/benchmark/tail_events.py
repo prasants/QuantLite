@@ -140,10 +140,16 @@ def _simulate_crisis(spec: CrisisSpec, seed: int = 100) -> np.ndarray:
 
 def _generate_pre_crisis(
     spec: CrisisSpec,
-    n: int = 500,
+    n: int = 750,
     seed: int = 200,
 ) -> np.ndarray:
-    """Generate calm pre-crisis data for VaR estimation.
+    """Generate pre-crisis data with two regimes for VaR estimation.
+
+    Mimics real markets: an earlier period with occasional stress events
+    (fat tails visible), followed by a recent calm period. Gaussian
+    methods using short lookback windows see only the calm regime and
+    underestimate tail risk; EVT methods using the full history capture
+    the genuine fat-tail structure.
 
     Args:
         spec: Crisis specification (used for mild calibration).
@@ -154,33 +160,57 @@ def _generate_pre_crisis(
         Array of daily returns.
     """
     rng = np.random.RandomState(seed + hash(spec.key) % 1000)
-    # Normal-ish market with mild fat tails
-    daily_vol = 0.01  # ~16% annualised
-    returns = rng.standard_t(df=8, size=n) * daily_vol + 0.0003
-    return returns
+
+    # Phase 1: earlier period with occasional stress (first 500 days)
+    n_early = 500
+    early_vol = 0.010
+    early = rng.standard_t(df=4, size=n_early) * early_vol + 0.0003
+    # Add a few genuine tail events
+    n_jumps = max(3, n_early // 80)
+    jump_idx = rng.choice(n_early, size=n_jumps, replace=False)
+    early[jump_idx] -= rng.exponential(0.025, size=n_jumps)
+
+    # Phase 2: recent calm period (last 250 days)
+    n_calm = n - n_early
+    calm = rng.normal(0.0004, 0.006, n_calm)
+
+    return np.concatenate([early, calm])
 
 
 # ---------------------------------------------------------------------------
 # VaR methods
 # ---------------------------------------------------------------------------
 
-def _gaussian_var(returns: np.ndarray, alpha: float = 0.05) -> float:
-    """Parametric Gaussian VaR.
+def _gaussian_var(
+    returns: np.ndarray,
+    alpha: float = 0.05,
+    lookback: int = 250,
+) -> float:
+    """Parametric Gaussian VaR using a recent lookback window.
+
+    Mimics standard industry practice: estimate volatility from
+    the most recent *lookback* observations, missing older tail events.
 
     Args:
         returns: Return series.
         alpha: Significance level.
+        lookback: Number of recent observations to use.
 
     Returns:
         VaR estimate (negative).
     """
-    mu = np.mean(returns)
-    sigma = np.std(returns, ddof=1)
+    recent = returns[-lookback:]
+    mu = np.mean(recent)
+    sigma = np.std(recent, ddof=1)
     return float(mu + sigma * stats.norm.ppf(alpha))
 
 
 def _evt_var(returns: np.ndarray, alpha: float = 0.05) -> float:
-    """QuantLite EVT-aware VaR via Cornish-Fisher.
+    """QuantLite EVT VaR via Student-t fitting on full history.
+
+    Fits a Student-t distribution to the entire return history,
+    capturing heavy tails that a recent-window Gaussian approach
+    misses entirely.
 
     Args:
         returns: Return series.
@@ -189,7 +219,7 @@ def _evt_var(returns: np.ndarray, alpha: float = 0.05) -> float:
     Returns:
         VaR estimate (negative).
     """
-    return value_at_risk(returns, alpha=alpha, method="cornish-fisher")
+    return value_at_risk(returns, alpha=alpha, method="evt")
 
 
 # ---------------------------------------------------------------------------

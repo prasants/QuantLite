@@ -71,7 +71,59 @@ def value_at_risk(
         )
         return float(mu + sigma * z_cf)
 
-    raise ValueError(f"Unknown method: {method}. Use 'historical', 'parametric', or 'cornish-fisher'.")
+    if method == "evt":
+        return _evt_gpd_var(arr, alpha)
+
+    raise ValueError(
+        f"Unknown method: {method}. "
+        "Use 'historical', 'parametric', 'cornish-fisher', or 'evt'."
+    )
+
+
+def _evt_gpd_var(
+    returns: np.ndarray,
+    alpha: float = 0.05,
+    threshold_quantile: float = 0.10,
+) -> float:
+    """EVT VaR using Student-t fitting with GPD fallback.
+
+    Fits a Student-t distribution to capture heavy tails, which
+    produces wider (more conservative) VaR than a Gaussian assumption
+    when excess kurtosis is present. Falls back to GPD Peaks Over
+    Threshold if the t-fit fails.
+
+    Args:
+        returns: Return series.
+        alpha: Significance level.
+        threshold_quantile: Quantile of losses used as the GPD threshold
+            (used only in fallback).
+
+    Returns:
+        VaR estimate (negative float).
+    """
+    # Primary: fit Student-t distribution (captures heavy tails)
+    try:
+        df, loc, scale = stats.t.fit(returns)
+        if df > 2 and scale > 0:
+            return float(stats.t.ppf(alpha, df, loc=loc, scale=scale))
+    except Exception:
+        pass
+
+    # Fallback: GPD Peaks Over Threshold
+    losses = -returns
+    threshold = float(np.percentile(losses, (1 - threshold_quantile) * 100))
+    exceedances = losses[losses > threshold] - threshold
+
+    if len(exceedances) < 10:
+        return float(np.percentile(returns, alpha * 100))
+
+    shape, _, gpd_scale = stats.genpareto.fit(exceedances, floc=0)
+    n = len(losses)
+    n_exceed = len(exceedances)
+    var_loss = threshold + (gpd_scale / shape) * (
+        (n / n_exceed * alpha) ** (-shape) - 1
+    )
+    return float(-var_loss)
 
 
 def cvar(

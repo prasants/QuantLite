@@ -61,6 +61,7 @@ docs = [
 ]
 dev = [
     "pytest>=7.0",
+    "pytest-asyncio>=0.23",
     "ruff>=0.4",
     "mypy>=1.8",
     "pandas-stubs",
@@ -85,3 +86,4 @@ disallow_untyped_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"

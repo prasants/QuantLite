@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -317,7 +316,10 @@ class TestWalkForward:
 
     def test_scoring_functions(self):
         from quantlite.portfolio.walkforward import (
-            sharpe_score, sortino_score, calmar_score, max_drawdown_score
+            calmar_score,
+            max_drawdown_score,
+            sharpe_score,
+            sortino_score,
         )
 
         rng = np.random.RandomState(42)

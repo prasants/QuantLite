@@ -4,6 +4,27 @@ All notable changes to QuantLite are documented here.
 
 ---
 
+## v1.6: The QuantLite Score
+
+An open, versioned, verifiable rating for trading track records (`quantlite.score`), built on the forensics and resampling stack.
+
+```python
+from quantlite.score import compute_score, verify_artifact
+
+result = compute_score(returns, n_trials=20)
+print(result.score, result.grade)          # e.g. 72.4 B
+payload = result.artifact.to_json()        # publish or store this
+assert verify_artifact(payload, returns)   # anyone can reproduce it
+```
+
+- **Composite 0-100 score (methodology QLS-1.0):** Deflated Sharpe Ratio skill (35%), bootstrap robustness (20%), tail risk (20%), consistency (15%), track record sufficiency (10%). Letter grades A+ through F.
+- **Integrity checks:** return smoothing, outlier dependence, the short-volatility signature, cherry-picked start dates, short records. Critical flags cap the score at 40, warnings at 70, and every flag travels with the result.
+- **Verifiable artifacts:** every score ships as canonical JSON with a SHA-256 input digest and content hash. `verify_artifact()` recomputes the score from the original returns and confirms it bit for bit.
+- **Deterministic by construction:** seeded bootstrap, platform-independent canonicalisation, frozen calibration constants per methodology version.
+- Full specification in `docs/score.md`.
+
+---
+
 ## v1.0: The Dream API
 
 QuantLite v1.0 introduces the **Dream API**, a five-function pipeline that chains the entire quant workflow:

@@ -85,6 +85,7 @@ nav:
     - Strategy Forensics: forensics.md
     - Overfitting Detection: overfitting.md
     - Resampled Backtesting: resampling.md
+    - The QuantLite Score: score.md
   - Systemic Risk:
     - Contagion Metrics: contagion.md
     - Network Risk: network.md

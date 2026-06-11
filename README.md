@@ -33,6 +33,24 @@ Five lines. Fetch data, detect market regimes, build a regime-aware portfolio, b
 
 ---
 
+## The QuantLite Score
+
+An open, versioned, verifiable rating for trading track records. Raw Sharpe ratios are trivially gamed: test fifty variants and publish the winner, start the chart at the bottom of a drawdown, sell tail risk and post a 92% win rate. The QuantLite Score rates a track record on the statistics that are hard to game — deflated Sharpe, bootstrap robustness, tail risk, consistency — and flags the classic manipulation patterns.
+
+```python
+from quantlite.score import compute_score, verify_artifact
+
+result = compute_score(returns, n_trials=20)
+print(result.score, result.grade)          # e.g. 72.4 B
+
+payload = result.artifact.to_json()        # publish or store this
+assert verify_artifact(payload, returns)   # anyone can reproduce it bit for bit
+```
+
+Every score ships as a portable artifact with a SHA-256 content hash. Same returns, same parameters, same library version: same score, bit for bit. The methodology (QLS-1.0) is open and frozen per version — see [the specification](docs/score.md).
+
+---
+
 ## Visual Showcase
 
 ### Fat Tails vs Gaussian

@@ -6,7 +6,7 @@ portfolio optimisation, multi-asset backtesting, and
 Stephen Few-inspired visualisation.
 """
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 from .backtesting import (
     BacktestConfig,
@@ -98,6 +98,8 @@ __all__ = [
     "RegimeUpdate",
     # Benchmarking (v1.5)
     "benchmark",
+    # QuantLite Score (v1.6)
+    "score",
 ]
 
 from . import (  # noqa: E402
@@ -131,4 +133,5 @@ from .regimes.online import OnlineRegimeDetector, RegimeUpdate  # noqa: E402
 stream = create_stream
 
 # v1.5: Benchmarking suite
-from . import benchmark  # noqa: E402
+# v1.6: QuantLite Score (open scoring spec for track records)
+from . import benchmark, score  # noqa: E402

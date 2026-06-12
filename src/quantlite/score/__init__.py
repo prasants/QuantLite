@@ -29,6 +29,15 @@ from .engine import (
     verify_artifact,
 )
 from .integrity import IntegrityFlag, validate_track_record
+from .monitoring import (
+    Alert,
+    AlertKind,
+    Cadence,
+    Monitor,
+    ScoreHistory,
+    ScoreSnapshot,
+    Severity,
+)
 from .provenance import (
     AttestedScore,
     DataSource,
@@ -57,4 +66,11 @@ __all__ = [
     "FirewallError",
     "is_independent",
     "assert_firewall",
+    "Cadence",
+    "Severity",
+    "AlertKind",
+    "Alert",
+    "ScoreSnapshot",
+    "ScoreHistory",
+    "Monitor",
 ]

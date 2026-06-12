@@ -6,6 +6,43 @@ All notable changes to QuantLite are documented here.
 
 ## Unreleased
 
+### Continuous monitoring and early warning (`quantlite.score.monitoring`)
+
+A point-in-time score says how good a record is today; monitoring says whether
+it is deteriorating, early enough to act. Runs the scoring machinery forward
+through time and raises alerts when a record turns.
+
+```python
+from quantlite.score import Monitor, Cadence, DataSource
+
+monitor = Monitor(
+    cadence=Cadence.DAILY,
+    source=DataSource.EXCHANGE_CUSTODY,
+    attester="exchange:quantmarket",
+    account_ref="acct-7a3f",
+)
+for returns, as_of in venue_periods:
+    for alert in monitor.observe(returns, as_of=as_of):
+        notify(alert)
+assert monitor.history.is_chain_valid()
+```
+
+- **Dual-window scoring:** an expanding window is the authoritative published
+  number; a trailing window compared against the preceding equal-length window
+  is the early-warning signal. Equal lengths make the comparison length-fair,
+  and the divergence is measured on annualised Sharpe (uncapped, sensitive on
+  short windows) rather than the integrity-capped composite.
+- **Cadences:** daily, weekly, monthly, yearly.
+- **Alerts:** `TRAILING_DIVERGENCE` (pre-emptive), `NEW_CRITICAL_FLAG`
+  (manipulation emerging over time), `GRADE_DROP`, `SCORE_DROP`. Each alert
+  references the triggering snapshot.
+- **Auditable history:** every observation appends a hash-chained
+  `ScoreSnapshot`; `ScoreHistory.is_chain_valid()` proves the record was not
+  reordered or back-edited, and each snapshot stays firewall-verifiable.
+- Thresholds are operator-tunable parameters; delivery (webhook, dashboard,
+  polling) is a hosted adapter over the emitted data structures.
+- Full specification in `docs/monitoring.md`.
+
 ### The firewall: provenance-aware scoring (`quantlite.score.provenance`)
 
 A score is only as trustworthy as the data behind it, and the most dangerous

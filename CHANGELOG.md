@@ -4,6 +4,48 @@ All notable changes to QuantLite are documented here.
 
 ---
 
+## Unreleased
+
+### The firewall: provenance-aware scoring (`quantlite.score.provenance`)
+
+A score is only as trustworthy as the data behind it, and the most dangerous
+data is data supplied by the party being rated. The firewall makes the
+QuantLite Score independent of who pays, enforced in code rather than policy.
+
+```python
+from quantlite.score import (
+    compute_score, DataSource, SourceAttestation, AttestedScore,
+)
+
+result = compute_score(returns, n_trials=20)
+attestation = SourceAttestation.create(
+    source=DataSource.EXCHANGE_CUSTODY,
+    account_ref="acct-7a3f",
+    period_start="2024-01-01", period_end="2024-12-31",
+    ingested_at="2025-01-04T09:00:00Z",
+    returns=returns, attester="exchange:quantmarket",
+)
+report = AttestedScore(result.artifact, attestation).verify(returns)
+assert report.ok and report.firewall_clean
+```
+
+- **`DataSource` / `is_independent`:** classifies a return series' origin.
+  Exchange custody, fund administrator, prime broker, and allocator-supplied
+  data are independent of the rated manager; manager-submitted data is not.
+- **`SourceAttestation`:** binds an `input_digest` to a named source, period,
+  and attester, sealed with its own SHA-256 hash under QLS-1.0
+  canonicalisation. Tamper-evident and stable across re-serialisation.
+- **`AttestedScore` / `FirewallReport`:** verifies a score and its provenance
+  in one pass — artifact consistency, attestation consistency, digest
+  agreement, score reproduction, and source independence. A manager-submitted
+  score still reproduces; it simply is not firewall-clean.
+- **`assert_firewall`:** hard gate raising `FirewallError` for tampered or
+  non-independent attestations.
+- Full specification and the marketplace-operator integration in
+  `docs/firewall.md`; commercial rationale in `STRATEGY.md`.
+
+---
+
 ## v1.6: The QuantLite Score
 
 An open, versioned, verifiable rating for trading track records (`quantlite.score`), built on the forensics and resampling stack.

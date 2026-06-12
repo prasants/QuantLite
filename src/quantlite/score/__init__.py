@@ -29,6 +29,15 @@ from .engine import (
     verify_artifact,
 )
 from .integrity import IntegrityFlag, validate_track_record
+from .provenance import (
+    AttestedScore,
+    DataSource,
+    FirewallError,
+    FirewallReport,
+    SourceAttestation,
+    assert_firewall,
+    is_independent,
+)
 
 __all__ = [
     "METHODOLOGY_VERSION",
@@ -41,4 +50,11 @@ __all__ = [
     "ScoreResult",
     "ScoreArtifact",
     "IntegrityFlag",
+    "DataSource",
+    "SourceAttestation",
+    "AttestedScore",
+    "FirewallReport",
+    "FirewallError",
+    "is_independent",
+    "assert_firewall",
 ]

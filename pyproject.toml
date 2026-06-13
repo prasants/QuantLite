@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantlite"
+version = "1.7.1"
+description = "A fat-tail-native quantitative finance toolkit: EVT, risk metrics, and honest modelling for markets that bite."
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+readme = "README.md"
+authors = [
+    { name = "Prasant Sudhakaran", email = "code@prasant.net" }
+]
+keywords = [
+    "quant",
+    "finance",
+    "risk",
+    "extreme value theory",
+    "monte carlo",
+    "fat tails",
+    "VaR",
+    "CVaR",
+    "options",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "mplfinance",
+]
+
+[project.optional-dependencies]
+yahoo = ["yfinance>=0.2"]
+crypto = ["ccxt>=4.0"]
+stream = ["ccxt>=4.0"]
+fred = ["fredapi>=0.5"]
+plotly = ["plotly>=5.0", "kaleido>=0.2"]
+report = ["plotly>=5.0", "kaleido>=0.2"]
+pdf = ["weasyprint>=60"]
+all = ["yfinance>=0.2", "ccxt>=4.0", "fredapi>=0.5", "plotly>=5.0", "kaleido>=0.2", "weasyprint>=60", "hmmlearn>=0.3"]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pandas-stubs",
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.24",
+]
+
+[project.urls]
+Homepage = "https://github.com/prasants/QuantLite"
+Repository = "https://github.com/prasants/QuantLite"
+Issues = "https://github.com/prasants/QuantLite/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
